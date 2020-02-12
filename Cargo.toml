@@ -9,3 +9,7 @@ edition = "2018"
 [dependencies]
 crossterm = "0.14"
 tui = { version = "0.8", default-features = false, features = ['crossterm'] }
+
+[dependencies.unic]
+git = "https://github.com/eyeplum/rust-unic.git"
+branch = "develop"

@@ -30,6 +30,7 @@ version = "0.1.0"
 dependencies = [
  "crossterm",
  "tui",
+ "unic",
 ]
 
 [[package]]
@@ -147,6 +148,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "matches"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ffc5c5338469d4d3ea17d269fa8ea3512ad247247c30bd2df69e68309ed0a08"
+
+[[package]]
 name = "mio"
 version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -189,12 +196,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "numtoa"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8f8bdf33df195859076e54ab11ee78a1b208382d3a26ec40d142ffc1ecc49ef"
-
-[[package]]
 name = "parking_lot"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -223,15 +224,6 @@ name = "redox_syscall"
 version = "0.1.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
-
-[[package]]
-name = "redox_termios"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e891cfe48e9100a70a3b6eb652fef28920c117d366339687bd5576160db0f76"
-dependencies = [
- "redox_syscall",
-]
 
 [[package]]
 name = "scopeguard"
@@ -273,18 +265,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c2fb2ec9bcd216a5b0d0ccf31ab17b5ed1d627960edff65bbe95d3ce221cefc"
 
 [[package]]
-name = "termion"
-version = "1.5.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c22cec9d8978d906be5ac94bceb5a010d885c626c4c8855721a4dbd20e3ac905"
-dependencies = [
- "libc",
- "numtoa",
- "redox_syscall",
- "redox_termios",
-]
-
-[[package]]
 name = "tui"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -292,12 +272,291 @@ checksum = "6b871b61f4c4b81e630215cd12e0ec29953d4545898e21a9e023b7520a74a9f9"
 dependencies = [
  "bitflags",
  "cassowary",
+ "crossterm",
  "either",
  "itertools",
  "log",
- "termion",
  "unicode-segmentation",
  "unicode-width",
+]
+
+[[package]]
+name = "unic"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-bidi",
+ "unic-char",
+ "unic-common",
+ "unic-emoji",
+ "unic-idna",
+ "unic-normal",
+ "unic-segment",
+ "unic-ucd",
+]
+
+[[package]]
+name = "unic-bidi"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "matches",
+ "unic-ucd-bidi",
+]
+
+[[package]]
+name = "unic-char"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-basics",
+ "unic-char-property",
+ "unic-char-range",
+]
+
+[[package]]
+name = "unic-char-basics"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+
+[[package]]
+name = "unic-char-property"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-range",
+]
+
+[[package]]
+name = "unic-char-range"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+
+[[package]]
+name = "unic-common"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+
+[[package]]
+name = "unic-emoji"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-emoji-char",
+]
+
+[[package]]
+name = "unic-emoji-char"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-idna"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "matches",
+ "unic-idna-mapping",
+ "unic-idna-punycode",
+ "unic-normal",
+ "unic-ucd-bidi",
+ "unic-ucd-normal",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-idna-mapping"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-idna-punycode"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+
+[[package]]
+name = "unic-normal"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-ucd-normal",
+]
+
+[[package]]
+name = "unic-segment"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-ucd-segment",
+]
+
+[[package]]
+name = "unic-ucd"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-ucd-age",
+ "unic-ucd-bidi",
+ "unic-ucd-block",
+ "unic-ucd-case",
+ "unic-ucd-category",
+ "unic-ucd-common",
+ "unic-ucd-hangul",
+ "unic-ucd-ident",
+ "unic-ucd-name",
+ "unic-ucd-name_aliases",
+ "unic-ucd-normal",
+ "unic-ucd-segment",
+ "unic-ucd-unihan",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-age"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-bidi"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-block"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-case"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-category"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "matches",
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-common"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-hangul"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-ident"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-name"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-ucd-hangul",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-name_aliases"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-normal"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-ucd-category",
+ "unic-ucd-hangul",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-segment"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-char-range",
+ "unic-emoji-char",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-unihan"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-char-property",
+ "unic-ucd-version",
+]
+
+[[package]]
+name = "unic-ucd-version"
+version = "0.9.0"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+dependencies = [
+ "unic-common",
 ]
 
 [[package]]
