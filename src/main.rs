@@ -12,20 +12,16 @@ use crossterm::{
 use tui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
-    style::{Color, Style},
-    widgets::{Block, Borders, Paragraph, Text, Widget},
+    style::{Color, Modifier, Style},
+    widgets::{Block, Borders, Paragraph, SelectableList, Text, Widget},
     Terminal,
 };
+
+use unic::segment::Graphemes;
 
 enum InputMode {
     Normal,
     Input,
-}
-
-impl Default for InputMode {
-    fn default() -> Self {
-        InputMode::Normal
-    }
 }
 
 impl fmt::Display for InputMode {
@@ -37,10 +33,18 @@ impl fmt::Display for InputMode {
     }
 }
 
-#[derive(Default)]
 struct Application {
     active_input_mode: InputMode,
     user_input: String,
+}
+
+impl Default for Application {
+    fn default() -> Self {
+        Application {
+            active_input_mode: InputMode::Normal,
+            user_input: String::default(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -76,9 +80,34 @@ fn main() -> Result<()> {
                 .style(Style::default().fg(Color::Yellow))
                 .render(&mut f, chunks[0]);
 
-            Block::default()
-                .title("Grapheme Clusters")
-                .borders(Borders::ALL)
+            let graphemes = Graphemes::new(&application.user_input);
+            let grapheme_strings = graphemes.fold(vec![], |mut sum, grapheme| {
+                let code_points_string =
+                    grapheme
+                        .chars()
+                        .fold("".to_owned(), |mut code_points_sum, chr| {
+                            if code_points_sum.is_empty() {
+                                code_points_sum = format!("U+{:04X}", chr as u32);
+                            } else {
+                                code_points_sum =
+                                    format!("{}, U+{:04X}", code_points_sum, chr as u32);
+                            }
+                            code_points_sum
+                        });
+                sum.push(code_points_string);
+                sum
+            });
+            SelectableList::default()
+                .block(Block::default().borders(Borders::ALL).title("Graphemes"))
+                .items(&grapheme_strings)
+                .select(None)
+                .style(Style::default())
+                .highlight_style(
+                    Style::default()
+                        .fg(Color::LightGreen)
+                        .modifier(Modifier::BOLD),
+                )
+                .highlight_symbol(">")
                 .render(&mut f, chunks[1]);
 
             Paragraph::new([Text::raw(application.active_input_mode.to_string())].iter())
