@@ -17,7 +17,7 @@ use tui::{
     Terminal,
 };
 
-use unic::segment::Graphemes;
+use unic::{segment::Graphemes, ucd::name::Name};
 
 enum InputMode {
     Normal,
@@ -55,6 +55,7 @@ fn main() -> Result<()> {
     let backend = CrosstermBackend::new(stdout);
 
     let mut terminal = Terminal::new(backend)?;
+    terminal.hide_cursor()?;
     terminal.clear()?;
 
     let mut application = Application::default();
@@ -82,19 +83,21 @@ fn main() -> Result<()> {
 
             let graphemes = Graphemes::new(&application.user_input);
             let grapheme_strings = graphemes.fold(vec![], |mut sum, grapheme| {
-                let code_points_string =
-                    grapheme
-                        .chars()
-                        .fold("".to_owned(), |mut code_points_sum, chr| {
-                            if code_points_sum.is_empty() {
-                                code_points_sum = format!("U+{:04X}", chr as u32);
-                            } else {
-                                code_points_sum =
-                                    format!("{}, U+{:04X}", code_points_sum, chr as u32);
-                            }
-                            code_points_sum
-                        });
-                sum.push(code_points_string);
+                grapheme.chars().for_each(|chr| {
+                    let mut code_point_str = format!("U+{:04X}", chr as u32);
+                    if code_point_str.len() < 8 {
+                        code_point_str =
+                            format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
+                    }
+                    let name = match Name::of(chr) {
+                        None => "".to_owned(),
+                        Some(name) => name.to_string(),
+                    };
+
+                    // TODO: How to make `chr` aligned?
+                    sum.push(format!("{}  {}  {}", code_point_str, chr, name));
+                });
+                sum.push("".to_owned());
                 sum
             });
             SelectableList::default()
