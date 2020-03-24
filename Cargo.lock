@@ -2,9 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "arc-swap"
-version = "0.4.4"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7b8a9123b8027467bce0099fe556c628a53c8d83df0507084c31e9ba2e39aff"
+checksum = "d663a8e9a99154b5fb793032533f6328da35e23aac63d5c152279aa8ba356825"
 
 [[package]]
 name = "bitflags"
@@ -125,9 +125,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.66"
+version = "0.2.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d515b1f41455adea1313a4a2ac8a8a477634fbae63cc6100e3aebb207ce61558"
+checksum = "dea0c0405123bba743ee3f91f49b1c7cfb684eef0da0a50110f758ccf24cdff0"
 
 [[package]]
 name = "lock_api"
@@ -227,9 +227,9 @@ checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
 
 [[package]]
 name = "scopeguard"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b42e15e59b18a828bbf5c58ea01debb36b9b096346de35d941dcb89009f24a0d"
+checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "signal-hook"
@@ -283,7 +283,7 @@ dependencies = [
 [[package]]
 name = "unic"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-bidi",
  "unic-char",
@@ -298,7 +298,7 @@ dependencies = [
 [[package]]
 name = "unic-bidi"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "matches",
  "unic-ucd-bidi",
@@ -307,7 +307,7 @@ dependencies = [
 [[package]]
 name = "unic-char"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-basics",
  "unic-char-property",
@@ -317,12 +317,12 @@ dependencies = [
 [[package]]
 name = "unic-char-basics"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 
 [[package]]
 name = "unic-char-property"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-range",
 ]
@@ -330,17 +330,17 @@ dependencies = [
 [[package]]
 name = "unic-char-range"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 
 [[package]]
 name = "unic-common"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 
 [[package]]
 name = "unic-emoji"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-emoji-char",
 ]
@@ -348,7 +348,7 @@ dependencies = [
 [[package]]
 name = "unic-emoji-char"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -358,7 +358,7 @@ dependencies = [
 [[package]]
 name = "unic-idna"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "matches",
  "unic-idna-mapping",
@@ -372,7 +372,7 @@ dependencies = [
 [[package]]
 name = "unic-idna-mapping"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -382,12 +382,12 @@ dependencies = [
 [[package]]
 name = "unic-idna-punycode"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 
 [[package]]
 name = "unic-normal"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-ucd-normal",
 ]
@@ -395,7 +395,7 @@ dependencies = [
 [[package]]
 name = "unic-segment"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-ucd-segment",
 ]
@@ -403,7 +403,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-ucd-age",
  "unic-ucd-bidi",
@@ -424,7 +424,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-age"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -434,7 +434,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-bidi"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -444,7 +444,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-block"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -454,7 +454,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-case"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -464,7 +464,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-category"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "matches",
  "unic-char-property",
@@ -475,7 +475,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-common"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -485,7 +485,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-hangul"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-ucd-version",
 ]
@@ -493,7 +493,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-ident"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -503,7 +503,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-name"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-ucd-hangul",
@@ -513,7 +513,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-name_aliases"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-ucd-version",
@@ -522,7 +522,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-normal"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -534,7 +534,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-segment"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-char-range",
@@ -545,7 +545,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-unihan"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-char-property",
  "unic-ucd-version",
@@ -554,7 +554,7 @@ dependencies = [
 [[package]]
 name = "unic-ucd-version"
 version = "0.9.0"
-source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50d8b5e9ad8c377a3db1cde3140c4bd4ca1bc1e3"
+source = "git+https://github.com/eyeplum/rust-unic.git?branch=develop#50330f20ab16822dd3ae2f60628630a7b7e5bf69"
 dependencies = [
  "unic-common",
 ]
