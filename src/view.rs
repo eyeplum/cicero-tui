@@ -1,14 +1,11 @@
 use crate::application_state::ApplicationState;
-
-use std::io::Stdout;
+use crate::renderer::ApplicationTerminal;
 
 use crossterm::Result;
 use tui::{
-    backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
     widgets::{Block, Borders, Paragraph, SelectableList, Text, Widget},
-    Terminal,
 };
 
 use unic::{segment::Graphemes, ucd::name::Name};
@@ -22,7 +19,7 @@ impl View {
 
     pub fn update(
         &self,
-        terminal: &mut Terminal<CrosstermBackend<Stdout>>,
+        terminal: &mut ApplicationTerminal,
         state: &ApplicationState,
     ) -> Result<()> {
         terminal.draw(|mut frame| {

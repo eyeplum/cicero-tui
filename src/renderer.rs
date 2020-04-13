@@ -6,6 +6,8 @@ use crossterm::{
 };
 use tui::{backend::CrosstermBackend, Terminal};
 
+pub type ApplicationTerminal = Terminal<CrosstermBackend<Stdout>>;
+
 pub struct Renderer;
 
 impl Renderer {
@@ -15,7 +17,7 @@ impl Renderer {
 
     pub fn run<F>(&self, mut f: F) -> Result<()>
     where
-        F: FnMut(&mut Terminal<CrosstermBackend<Stdout>>, &mut bool) -> Result<()>,
+        F: FnMut(&mut ApplicationTerminal, &mut bool) -> Result<()>,
     {
         enable_raw_mode()?;
 
