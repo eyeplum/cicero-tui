@@ -6,7 +6,7 @@ mod application_state;
 use application_state::ApplicationState;
 
 mod input;
-use input::{InputHandler, InputMode};
+use input::InputHandler;
 
 mod renderer;
 use renderer::Renderer;

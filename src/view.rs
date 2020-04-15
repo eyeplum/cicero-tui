@@ -24,7 +24,6 @@ impl View {
     ) -> Result<()> {
         terminal.draw(|mut frame| {
             let chunks = Layout::default()
-                .margin(1)
                 .constraints(
                     [
                         Constraint::Length(3),
@@ -73,8 +72,8 @@ impl View {
                 .highlight_symbol(">")
                 .render(&mut frame, chunks[1]);
 
-            Paragraph::new([Text::raw(state.active_input_mode.to_string())].iter())
-                .style(Style::default().fg(Color::Blue))
+            Paragraph::new([Text::raw("ESC to quit")].iter())
+                .style(Style::default().fg(Color::LightGreen))
                 .render(&mut frame, chunks[2]);
         })?;
 
