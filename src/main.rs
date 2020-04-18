@@ -5,9 +5,6 @@ use crossterm::Result;
 mod application_state;
 use application_state::ApplicationState;
 
-mod input;
-use input::InputHandler;
-
 mod renderer;
 use renderer::Renderer;
 
@@ -18,13 +15,10 @@ fn main() -> Result<()> {
     let mut state = ApplicationState::default();
 
     let renderer = Renderer::new();
-    let view = View::new();
-    let mut input_handler = InputHandler::new();
+    let mut view = View::new();
 
     renderer.run(|terminal, keep_running| {
-        view.update(terminal, &input_handler.user_input)?;
-
-        input_handler.handle_event(&mut state)?;
+        view.update(terminal, &mut state)?;
         *keep_running = state.keep_running;
 
         Ok(())
