@@ -1,7 +1,7 @@
-use crate::application_state::ApplicationState;
 use crate::renderer::ApplicationTerminal;
 
 use crossterm::Result;
+
 use tui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
@@ -17,11 +17,7 @@ impl View {
         View {}
     }
 
-    pub fn update(
-        &self,
-        terminal: &mut ApplicationTerminal,
-        state: &ApplicationState,
-    ) -> Result<()> {
+    pub fn update(&self, terminal: &mut ApplicationTerminal, user_input: &str) -> Result<()> {
         terminal.draw(|mut frame| {
             let chunks = Layout::default()
                 .constraints(
@@ -35,12 +31,12 @@ impl View {
                 .direction(Direction::Vertical)
                 .split(frame.size());
 
-            Paragraph::new([Text::raw(&state.user_input)].iter())
+            Paragraph::new([Text::raw(user_input)].iter())
                 .block(Block::default().title("Input").borders(Borders::ALL))
                 .style(Style::default().fg(Color::Yellow))
                 .render(&mut frame, chunks[0]);
 
-            let graphemes = Graphemes::new(&state.user_input);
+            let graphemes = Graphemes::new(user_input);
             let grapheme_strings = graphemes.fold(vec![], |mut sum, grapheme| {
                 grapheme.chars().for_each(|chr| {
                     let mut code_point_str = format!("U+{:04X}", chr as u32);

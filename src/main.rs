@@ -19,10 +19,10 @@ fn main() -> Result<()> {
 
     let renderer = Renderer::new();
     let view = View::new();
-    let input_handler = InputHandler::new();
+    let mut input_handler = InputHandler::new();
 
     renderer.run(|terminal, keep_running| {
-        view.update(terminal, &state)?;
+        view.update(terminal, &input_handler.user_input)?;
 
         input_handler.handle_event(&mut state)?;
         *keep_running = state.keep_running;
