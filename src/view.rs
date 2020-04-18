@@ -1,11 +1,13 @@
 use crate::renderer::ApplicationTerminal;
 
+use std::borrow::Cow;
+
 use crossterm::Result;
 
 use tui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Paragraph, SelectableList, Text, Widget},
+    widgets::{Block, Borders, List, Paragraph, Text},
 };
 
 use unic::{segment::Graphemes, ucd::name::Name};
@@ -31,13 +33,14 @@ impl View {
                 .direction(Direction::Vertical)
                 .split(frame.size());
 
-            Paragraph::new([Text::raw(user_input)].iter())
+            let user_input_items = [Text::raw(user_input)];
+            let user_input_text = Paragraph::new(user_input_items.iter())
                 .block(Block::default().title("Input").borders(Borders::ALL))
-                .style(Style::default().fg(Color::Yellow))
-                .render(&mut frame, chunks[0]);
+                .style(Style::default().fg(Color::Yellow));
+            frame.render_widget(user_input_text, chunks[0]);
 
             let graphemes = Graphemes::new(user_input);
-            let grapheme_strings = graphemes.fold(vec![], |mut sum, grapheme| {
+            let grapheme_items = graphemes.fold(vec![], |mut sum, grapheme| {
                 grapheme.chars().for_each(|chr| {
                     let mut code_point_str = format!("U+{:04X}", chr as u32);
                     if code_point_str.len() < 8 {
@@ -49,28 +52,29 @@ impl View {
                         Some(name) => name.to_string(),
                     };
 
-                    // TODO: How to make `chr` aligned?
-                    sum.push(format!("{}  {}  {}", code_point_str, chr, name));
+                    sum.push(Text::Raw(Cow::from(format!(
+                        "{}  {}  {}",
+                        code_point_str, chr, name
+                    ))));
                 });
-                sum.push("".to_owned());
+                sum.push(Text::Raw(Cow::from("")));
                 sum
             });
-            SelectableList::default()
+            let graphemes_list = List::new(grapheme_items.into_iter())
                 .block(Block::default().borders(Borders::ALL).title("Graphemes"))
-                .items(&grapheme_strings)
-                .select(None)
                 .style(Style::default())
                 .highlight_style(
                     Style::default()
                         .fg(Color::LightGreen)
                         .modifier(Modifier::BOLD),
                 )
-                .highlight_symbol(">")
-                .render(&mut frame, chunks[1]);
+                .highlight_symbol(">");
+            frame.render_widget(graphemes_list, chunks[1]);
 
-            Paragraph::new([Text::raw("ESC to quit")].iter())
-                .style(Style::default().fg(Color::LightGreen))
-                .render(&mut frame, chunks[2]);
+            let help_item = [Text::raw("ESC to quit")];
+            let help_text =
+                Paragraph::new(help_item.iter()).style(Style::default().fg(Color::LightGreen));
+            frame.render_widget(help_text, chunks[2]);
         })?;
 
         Ok(())
