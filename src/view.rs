@@ -1,17 +1,15 @@
-use crate::renderer::ApplicationTerminal;
-
 use std::borrow::Cow;
 use std::io::Stdout;
 
 use crossterm::Result;
-
 use tui::backend::CrosstermBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, Text};
 use tui::{Frame, Terminal};
-
 use unic::{segment::Graphemes, ucd::name::Name};
+
+use crate::renderer::ApplicationTerminal;
 
 type TerminalFrame<'a> = Frame<'a, CrosstermBackend<Stdout>>;
 

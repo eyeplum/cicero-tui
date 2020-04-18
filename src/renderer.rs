@@ -1,9 +1,7 @@
 use std::io::{stdout, Stdout};
 
-use crossterm::{
-    terminal::{disable_raw_mode, enable_raw_mode},
-    Result,
-};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crossterm::Result;
 use tui::{backend::CrosstermBackend, Terminal};
 
 pub type ApplicationTerminal = Terminal<CrosstermBackend<Stdout>>;

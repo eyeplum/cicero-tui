@@ -1,9 +1,7 @@
-use crate::ApplicationState;
+use crossterm::event::{read, Event, KeyCode};
+use crossterm::Result;
 
-use crossterm::{
-    event::{read, Event, KeyCode},
-    Result,
-};
+use crate::ApplicationState;
 
 pub struct InputHandler {
     pub user_input: String,
