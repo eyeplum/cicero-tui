@@ -1,20 +1,21 @@
+use std::collections::HashSet;
+
 use tui::widgets::ListState;
 use unic::segment::Graphemes;
 use unic::ucd::name::Name;
-
-type GraphemeCluster = Vec<char>;
 
 #[derive(Default)]
 pub struct StatefulGraphemes {
     pub state: ListState,
     pub rows: Vec<String>,
 
-    graphemes: Vec<GraphemeCluster>,
+    grapheme_start_row_indices: HashSet<usize>,
+    grapheme_end_row_indices: HashSet<usize>,
 }
 
 impl StatefulGraphemes {
     pub fn new(s: &str) -> Self {
-        let graphemes: Vec<GraphemeCluster> = Graphemes::new(s)
+        let graphemes: Vec<Vec<char>> = Graphemes::new(s)
             .map(|grapheme| grapheme.chars().map(|chr| chr).collect())
             .collect();
 
@@ -24,19 +25,24 @@ impl StatefulGraphemes {
         }
 
         let mut rows = vec![];
-        for (i, grapheme) in graphemes.iter().enumerate() {
-            for chr in grapheme {
-                let mut code_point_str = format!("U+{:04X}", *chr as u32);
-                if code_point_str.len() < 8 {
-                    code_point_str =
-                        format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
-                }
-                let name = match Name::of(*chr) {
-                    None => "".to_owned(),
-                    Some(name) => name.to_string(),
-                };
 
-                rows.push(format!("{}  {}  {}", code_point_str, chr, name));
+        let mut grapheme_start_row_indices = HashSet::new();
+        grapheme_start_row_indices.reserve(graphemes.len());
+
+        let mut grapheme_end_row_indices = HashSet::new();
+        grapheme_end_row_indices.reserve(graphemes.len());
+
+        for (i, grapheme) in graphemes.iter().enumerate() {
+            for (j, chr) in grapheme.iter().enumerate() {
+                if j == 0 {
+                    grapheme_start_row_indices.insert(rows.len());
+                }
+
+                if j + 1 == grapheme.len() {
+                    grapheme_end_row_indices.insert(rows.len());
+                }
+
+                rows.push(StatefulGraphemes::row_for(*chr));
             }
 
             if i + 1 < graphemes.len() {
@@ -47,7 +53,8 @@ impl StatefulGraphemes {
         StatefulGraphemes {
             state,
             rows,
-            graphemes,
+            grapheme_start_row_indices,
+            grapheme_end_row_indices,
         }
     }
 
@@ -66,18 +73,7 @@ impl StatefulGraphemes {
 
                 let mut next = selected + 1;
                 {
-                    let mut end_of_graphemes = vec![];
-                    end_of_graphemes.reserve(self.graphemes.len());
-                    for (i, grapheme) in self.graphemes.iter().enumerate() {
-                        if i == 0 {
-                            end_of_graphemes.push(grapheme.len() - 1);
-                        } else {
-                            end_of_graphemes
-                                .push(end_of_graphemes.last().unwrap() + 1 + grapheme.len());
-                        }
-                    }
-
-                    if end_of_graphemes.contains(&selected) {
+                    if self.grapheme_end_row_indices.contains(&selected) {
                         next += 1;
                     }
                 }
@@ -101,27 +97,29 @@ impl StatefulGraphemes {
 
                 let mut previous = selected - 1;
                 {
-                    let mut start_of_graphemes = vec![];
-                    start_of_graphemes.reserve(self.graphemes.len());
-                    for (i, _grapheme) in self.graphemes.iter().enumerate() {
-                        if i == 0 {
-                            start_of_graphemes.push(0);
-                        } else {
-                            start_of_graphemes.push(
-                                start_of_graphemes.last().unwrap()
-                                    + &self.graphemes[i - 1].len()
-                                    + 1,
-                            );
-                        }
-                    }
-
-                    if start_of_graphemes.contains(&selected) {
+                    if self.grapheme_start_row_indices.contains(&selected) {
                         previous -= 1;
                     }
                 }
                 self.state.select(Some(previous));
             }
         }
+    }
+
+    const CODE_POINT_STR_PADDING: usize = 8;
+
+    fn row_for(chr: char) -> String {
+        let mut code_point_str = format!("U+{:04X}", chr as u32);
+        if code_point_str.len() < StatefulGraphemes::CODE_POINT_STR_PADDING {
+            code_point_str = format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
+        }
+
+        let name = match Name::of(chr) {
+            None => "".to_owned(),
+            Some(name) => name.to_string(),
+        };
+
+        format!("{}  {}  {}", code_point_str, chr, name)
     }
 }
 
@@ -135,8 +133,35 @@ mod tests {
     fn test_new_stateful_graphemes() {
         let graphemes = StatefulGraphemes::new(TEST_STR);
 
-        assert_eq!(graphemes.graphemes.len(), 6);
         assert_eq!(graphemes.rows.len(), 12);
+
+        {
+            let mut expected_grapheme_start_row_indices = HashSet::new();
+            expected_grapheme_start_row_indices.insert(0);
+            expected_grapheme_start_row_indices.insert(2);
+            expected_grapheme_start_row_indices.insert(4);
+            expected_grapheme_start_row_indices.insert(7);
+            expected_grapheme_start_row_indices.insert(9);
+            expected_grapheme_start_row_indices.insert(11);
+            assert_eq!(
+                graphemes.grapheme_start_row_indices,
+                expected_grapheme_start_row_indices
+            );
+        }
+
+        {
+            let mut expected_grapheme_end_row_indices = HashSet::new();
+            expected_grapheme_end_row_indices.insert(0);
+            expected_grapheme_end_row_indices.insert(2);
+            expected_grapheme_end_row_indices.insert(5);
+            expected_grapheme_end_row_indices.insert(7);
+            expected_grapheme_end_row_indices.insert(9);
+            expected_grapheme_end_row_indices.insert(11);
+            assert_eq!(
+                graphemes.grapheme_end_row_indices,
+                expected_grapheme_end_row_indices
+            );
+        }
 
         assert!(graphemes.state.selected().is_some());
         assert_eq!(graphemes.state.selected().unwrap(), 0);
