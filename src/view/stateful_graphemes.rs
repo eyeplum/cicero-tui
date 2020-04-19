@@ -1,13 +1,53 @@
 use std::collections::HashSet;
+use std::fmt;
 
 use tui::widgets::ListState;
 use unic::segment::Graphemes;
 use unic::ucd::name::Name;
 
+use crate::view::code_point_description;
+
+#[derive(Default)]
+pub struct GraphemeRow {
+    pub code_point: Option<char>,
+}
+
+impl GraphemeRow {
+    const CODE_POINT_STR_PADDING: usize = 8;
+
+    pub fn new(chr: char) -> Self {
+        GraphemeRow {
+            code_point: Some(chr),
+        }
+    }
+}
+
+impl fmt::Display for GraphemeRow {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.code_point {
+            None => write!(f, ""),
+            Some(chr) => {
+                let mut code_point_str = code_point_description(chr);
+                if code_point_str.len() < GraphemeRow::CODE_POINT_STR_PADDING {
+                    code_point_str =
+                        format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
+                }
+
+                let name = match Name::of(chr) {
+                    None => "".to_owned(),
+                    Some(name) => name.to_string(),
+                };
+
+                write!(f, "{}  {}  {}", code_point_str, chr, name)
+            }
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct StatefulGraphemes {
     pub state: ListState,
-    pub rows: Vec<String>,
+    pub rows: Vec<GraphemeRow>,
 
     grapheme_start_row_indices: HashSet<usize>,
     grapheme_end_row_indices: HashSet<usize>,
@@ -42,11 +82,11 @@ impl StatefulGraphemes {
                     grapheme_end_row_indices.insert(rows.len());
                 }
 
-                rows.push(StatefulGraphemes::row_for(*chr));
+                rows.push(GraphemeRow::new(*chr));
             }
 
             if i + 1 < graphemes.len() {
-                rows.push("".to_owned());
+                rows.push(GraphemeRow::default());
             }
         }
 
@@ -104,22 +144,6 @@ impl StatefulGraphemes {
                 self.state.select(Some(previous));
             }
         }
-    }
-
-    const CODE_POINT_STR_PADDING: usize = 8;
-
-    fn row_for(chr: char) -> String {
-        let mut code_point_str = format!("U+{:04X}", chr as u32);
-        if code_point_str.len() < StatefulGraphemes::CODE_POINT_STR_PADDING {
-            code_point_str = format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
-        }
-
-        let name = match Name::of(chr) {
-            None => "".to_owned(),
-            Some(name) => name.to_string(),
-        };
-
-        format!("{}  {}  {}", code_point_str, chr, name)
     }
 }
 
