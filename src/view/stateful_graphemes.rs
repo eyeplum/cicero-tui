@@ -60,7 +60,7 @@ impl StatefulGraphemes {
             .collect();
 
         let mut state = ListState::default();
-        if graphemes.len() > 0 {
+        if !graphemes.is_empty() {
             state.select(Some(0));
         }
 

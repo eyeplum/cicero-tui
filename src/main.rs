@@ -9,16 +9,16 @@ mod renderer;
 use renderer::Renderer;
 
 mod view;
-use view::View;
+use view::MainView;
 
 fn main() -> Result<()> {
     let mut state = ApplicationState::default();
 
     let renderer = Renderer::new();
-    let mut view = View::new();
+    let mut main_view = MainView::new();
 
     renderer.run(|terminal, keep_running| {
-        view.update(terminal, &mut state)?;
+        main_view.update(terminal, &mut state)?;
         *keep_running = state.keep_running;
 
         Ok(())

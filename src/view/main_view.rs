@@ -17,15 +17,15 @@ use crate::ApplicationState;
 
 type TerminalFrame<'a> = Frame<'a, CrosstermBackend<Stdout>>;
 
-pub struct View {
+pub struct MainView {
     user_input: String,
     graphemes: StatefulGraphemes,
     showing_detail: Option<char>,
 }
 
-impl View {
+impl MainView {
     pub fn new() -> Self {
-        View {
+        MainView {
             user_input: String::default(),
             graphemes: StatefulGraphemes::default(),
             showing_detail: None,
@@ -85,20 +85,20 @@ impl View {
     }
 
     fn draw_graphemes_list(&mut self, frame: &mut TerminalFrame, rect: Rect) {
-        let grapheme_items = self
-            .graphemes
-            .rows
-            .iter()
-            .map(|row| Text::raw(row.to_string()));
-        let graphemes_list = List::new(grapheme_items.into_iter())
-            .block(Block::default().borders(Borders::ALL).title("Graphemes"))
-            .style(Style::default())
-            .highlight_style(
-                Style::default()
-                    .fg(Color::LightGreen)
-                    .modifier(Modifier::BOLD),
-            )
-            .highlight_symbol(">");
+        let graphemes_list = List::new(
+            self.graphemes
+                .rows
+                .iter()
+                .map(|row| Text::raw(row.to_string())),
+        )
+        .block(Block::default().borders(Borders::ALL).title("Graphemes"))
+        .style(Style::default())
+        .highlight_style(
+            Style::default()
+                .fg(Color::LightGreen)
+                .modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(">");
 
         frame.render_stateful_widget(graphemes_list, rect, &mut self.graphemes.state);
     }
@@ -139,12 +139,11 @@ impl View {
     }
 
     fn draw_help_text(&mut self, frame: &mut TerminalFrame, rect: Rect) {
-        let help_item;
-        if self.showing_detail.is_some() {
-            help_item = [Text::raw("esc: quit | q: hide detail")];
+        let help_item = if self.showing_detail.is_some() {
+            [Text::raw("esc: quit | q: hide detail")]
         } else {
-            help_item = [Text::raw("esc: quit")];
-        }
+            [Text::raw("esc: quit")]
+        };
 
         let help_text =
             Paragraph::new(help_item.iter()).style(Style::default().fg(Color::LightGreen));
