@@ -8,7 +8,7 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, Text};
 use tui::Frame;
 use unic::char::property::EnumeratedCharProperty;
-use unic::ucd::{Age, GeneralCategory, Name};
+use unic::ucd::{Age, GeneralCategory, Name, UNICODE_VERSION};
 
 use crate::renderer::ApplicationTerminal;
 use crate::view::code_point_description;
@@ -65,7 +65,7 @@ impl MainView {
                 }
             }
 
-            self.draw_help_text(&mut frame, chunks[2]);
+            self.draw_status_bar(&mut frame, chunks[2]);
         })?;
 
         if let Event::Key(event) = read()? {
@@ -138,17 +138,27 @@ impl MainView {
         frame.render_widget(paragraph, rect);
     }
 
-    fn draw_help_text(&mut self, frame: &mut TerminalFrame, rect: Rect) {
-        let help_item = if self.showing_detail.is_some() {
-            [Text::raw("esc: quit | q: hide detail")]
-        } else {
-            [Text::raw("esc: quit")]
-        };
+    fn draw_status_bar(&mut self, frame: &mut TerminalFrame, rect: Rect) {
+        let status_bar_chunks = Layout::default()
+            .horizontal_margin(1)
+            .constraints([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)].as_ref())
+            .direction(Direction::Horizontal)
+            .split(rect);
 
+        let help_item = if self.showing_detail.is_some() {
+            [Text::raw("[ESC]: Quit  [Q]: Hide Detail")]
+        } else {
+            [Text::raw("[ESC]: Quit")]
+        };
         let help_text =
             Paragraph::new(help_item.iter()).style(Style::default().fg(Color::LightGreen));
+        frame.render_widget(help_text, status_bar_chunks[0]);
 
-        frame.render_widget(help_text, rect);
+        let unicode_version_item = [Text::raw(format!("Unicode Version {}", UNICODE_VERSION))];
+        let unicode_version_text = Paragraph::new(unicode_version_item.iter())
+            .style(Style::default().fg(Color::LightGreen))
+            .alignment(Alignment::Right);
+        frame.render_widget(unicode_version_text, status_bar_chunks[1]);
     }
 
     fn handle_key_event(&mut self, event: KeyEvent, app_state: &mut ApplicationState) {
