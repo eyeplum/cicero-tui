@@ -8,6 +8,8 @@ use application_state::ApplicationState;
 mod renderer;
 use renderer::Renderer;
 
+mod ucd;
+
 mod view;
 use view::MainView;
 
