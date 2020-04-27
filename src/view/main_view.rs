@@ -7,20 +7,19 @@ use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, Paragraph, Text};
 use tui::Frame;
-use unic::char::property::EnumeratedCharProperty;
-use unic::ucd::{Age, GeneralCategory, Name, UNICODE_VERSION};
+use unic::ucd::UNICODE_VERSION;
 
 use crate::renderer::ApplicationTerminal;
-use crate::view::code_point_description;
+use crate::view::character_detail_view::CharacterDetailView;
 use crate::view::stateful_graphemes::StatefulGraphemes;
 use crate::ApplicationState;
 
-type TerminalFrame<'a> = Frame<'a, CrosstermBackend<Stdout>>;
+pub type TerminalFrame<'a> = Frame<'a, CrosstermBackend<Stdout>>;
 
 pub struct MainView {
     user_input: String,
     graphemes: StatefulGraphemes,
-    showing_detail: Option<char>,
+    character_detail_view: Option<CharacterDetailView>,
 }
 
 impl MainView {
@@ -28,7 +27,7 @@ impl MainView {
         MainView {
             user_input: String::default(),
             graphemes: StatefulGraphemes::default(),
-            showing_detail: None,
+            character_detail_view: None,
         }
     }
 
@@ -52,17 +51,19 @@ impl MainView {
 
             self.draw_user_input(&mut frame, chunks[0]);
 
-            match self.showing_detail {
-                None => self.draw_graphemes_list(&mut frame, chunks[1]),
-                Some(chr) => {
-                    let grapheme_list_chunks = Layout::default()
-                        .constraints([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)].as_ref())
-                        .direction(Direction::Horizontal)
-                        .split(chunks[1]);
+            if self.character_detail_view.is_some() {
+                let grapheme_list_chunks = Layout::default()
+                    .constraints([Constraint::Ratio(1, 2), Constraint::Ratio(1, 2)].as_ref())
+                    .direction(Direction::Horizontal)
+                    .split(chunks[1]);
 
-                    self.draw_graphemes_list(&mut frame, grapheme_list_chunks[0]);
-                    self.draw_character_detail(chr, &mut frame, grapheme_list_chunks[1]);
-                }
+                self.draw_graphemes_list(&mut frame, grapheme_list_chunks[0]);
+                self.character_detail_view
+                    .as_mut()
+                    .unwrap()
+                    .draw(&mut frame, grapheme_list_chunks[1]);
+            } else {
+                self.draw_graphemes_list(&mut frame, chunks[1])
             }
 
             self.draw_status_bar(&mut frame, chunks[2]);
@@ -103,41 +104,6 @@ impl MainView {
         frame.render_stateful_widget(graphemes_list, rect, &mut self.graphemes.state);
     }
 
-    fn draw_character_detail(&mut self, chr: char, frame: &mut TerminalFrame, rect: Rect) {
-        let code_point_description = code_point_description(chr);
-
-        let name_description = match Name::of(chr) {
-            Some(name) => name.to_string(),
-            None => "".to_owned(),
-        };
-
-        let age_description = match Age::of(chr) {
-            Some(age) => format!("Unicode {}", age.actual().to_string()),
-            None => "N/A".to_owned(),
-        };
-
-        let gc = GeneralCategory::of(chr);
-        let gc_description = format!("{}({})", gc.human_name(), gc.abbr_name());
-
-        let text = [
-            Text::raw(format!("Code Point: {}\n", code_point_description)),
-            Text::raw(format!("Name: {}\n", name_description)),
-            Text::raw(format!("Age: {}\n", age_description)),
-            Text::raw(format!("General Category: {}\n", gc_description)),
-        ];
-        let paragraph = Paragraph::new(text.iter())
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title(&code_point_description),
-            )
-            .style(Style::default())
-            .alignment(Alignment::Center)
-            .wrap(true);
-
-        frame.render_widget(paragraph, rect);
-    }
-
     fn draw_status_bar(&mut self, frame: &mut TerminalFrame, rect: Rect) {
         let status_bar_chunks = Layout::default()
             .horizontal_margin(1)
@@ -145,7 +111,7 @@ impl MainView {
             .direction(Direction::Horizontal)
             .split(rect);
 
-        let help_item = if self.showing_detail.is_some() {
+        let help_item = if self.character_detail_view.is_some() {
             [Text::raw("[ESC]: Quit  [Q]: Hide Detail")]
         } else {
             [Text::raw("[ESC]: Quit")]
@@ -166,21 +132,21 @@ impl MainView {
             KeyCode::Esc => app_state.keep_running = false,
             KeyCode::Up => {
                 self.graphemes.select_previous();
-                if self.showing_detail.is_some() {
+                if self.character_detail_view.is_some() {
                     self.update_showing_detail();
                 }
             }
             KeyCode::Down => {
                 self.graphemes.select_next();
-                if self.showing_detail.is_some() {
+                if self.character_detail_view.is_some() {
                     self.update_showing_detail();
                 }
             }
             KeyCode::Enter => self.update_showing_detail(),
             KeyCode::Char(c) => {
-                if self.showing_detail.is_some() {
+                if self.character_detail_view.is_some() {
                     if c == 'q' {
-                        self.showing_detail = None;
+                        self.character_detail_view = None;
                     }
                     return;
                 }
@@ -189,7 +155,7 @@ impl MainView {
                 self.graphemes = StatefulGraphemes::new(&self.user_input);
             }
             KeyCode::Backspace => {
-                if self.showing_detail.is_some() {
+                if self.character_detail_view.is_some() {
                     return;
                 }
 
@@ -203,7 +169,7 @@ impl MainView {
     fn update_showing_detail(&mut self) {
         if let Some(selected_row_index) = self.graphemes.state.selected() {
             if let Some(chr) = self.graphemes.rows[selected_row_index].code_point {
-                self.showing_detail = Some(chr);
+                self.character_detail_view = Some(CharacterDetailView::new(chr));
             }
         }
     }

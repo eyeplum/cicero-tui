@@ -1,3 +1,4 @@
+mod character_detail_view;
 mod main_view;
 mod stateful_graphemes;
 
