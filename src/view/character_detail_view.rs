@@ -1,5 +1,5 @@
 use tui::layout::{Alignment, Rect};
-use tui::style::Style;
+use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 use unic::char::property::EnumeratedCharProperty;
 use unic::ucd::{Age, GeneralCategory, Name};
@@ -43,6 +43,7 @@ impl CharacterDetailView {
         };
 
         let text = [
+            Text::styled("General\n\n", Style::default().modifier(Modifier::BOLD)),
             Text::raw(format!("Code Point: {}\n", code_point_description)),
             Text::raw(format!("Name: {}\n", name_description)),
             Text::raw(format!("Age: {}\n", age_description)),
