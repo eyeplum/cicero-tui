@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 crossterm = "0.17"
+freetype-rs = "0.24"
 tui = { version = "0.9", default-features = false, features = ['crossterm'] }
 
 [dependencies.unic]
