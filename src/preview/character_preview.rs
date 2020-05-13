@@ -1,8 +1,8 @@
 use freetype::{Face, GlyphSlot, Library};
 use std::cmp::min;
 
-const WIDTH: usize = 32;
-const HEIGHT: usize = 16;
+const WIDTH: usize = 128;
+const HEIGHT: usize = 128;
 
 pub type Bitmap = [[u8; WIDTH]; HEIGHT];
 
