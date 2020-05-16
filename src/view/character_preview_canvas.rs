@@ -28,7 +28,7 @@ impl CharacterPreviewCanvas {
                     bitmap: self
                         .character_preview
                         .preview_for(chr, &RenderSize::new(64, 64))
-                        .unwrap(),
+                        .unwrap(), // FIXME: Force unwrap
                 });
             });
 

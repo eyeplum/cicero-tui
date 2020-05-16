@@ -22,8 +22,6 @@ impl CharacterDetailView {
         }
     }
 
-    const NOT_AVAILABLE_DISPLAY_TEXT: &'static str = "N/A";
-
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
         let chunks = Layout::default()
             .constraints([Constraint::Length(20), Constraint::Min(10)].as_ref())
@@ -35,6 +33,8 @@ impl CharacterDetailView {
 
         self.draw_character_properties(frame, chunks[1]);
     }
+
+    const NOT_AVAILABLE_DISPLAY_TEXT: &'static str = "N/A";
 
     fn draw_character_properties(&self, frame: &mut TerminalFrame, rect: Rect) {
         let code_point_description = code_point_description(self.chr);
