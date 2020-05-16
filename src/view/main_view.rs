@@ -112,7 +112,7 @@ impl MainView {
             .split(rect);
 
         let help_item = if self.character_detail_view.is_some() {
-            [Text::raw("[ESC]: Quit  [Q]: Hide Detail")]
+            [Text::raw("[ESC]: Hide Detail")]
         } else {
             [Text::raw("[ESC]: Quit")]
         };
