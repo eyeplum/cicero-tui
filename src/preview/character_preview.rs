@@ -1,17 +1,26 @@
 use freetype::{Face, GlyphSlot, Library};
 use std::cmp::min;
 
-const WIDTH: usize = 128;
-const HEIGHT: usize = 128;
+pub type Bitmap = Vec<Vec<u8>>;
 
-pub type Bitmap = [[u8; WIDTH]; HEIGHT];
+#[derive(Debug)]
+pub struct RenderSize {
+    pub width: usize,
+    pub height: usize,
+}
 
-fn glyph_to_bitmap(glyph: &GlyphSlot) -> Bitmap {
-    let mut bitmap = [[0; WIDTH]; HEIGHT];
+impl RenderSize {
+    pub fn new(width: usize, height: usize) -> Self {
+        RenderSize { width, height }
+    }
+}
+
+fn glyph_to_bitmap(glyph: &GlyphSlot, size: &RenderSize) -> Bitmap {
+    let mut bitmap = vec![vec![0; size.width as usize]; size.height as usize];
 
     let glyph_bitmap = glyph.bitmap();
-    let x_max = min(WIDTH, glyph_bitmap.width() as usize);
-    let y_max = min(HEIGHT, glyph_bitmap.rows() as usize);
+    let x_max = min(size.width, glyph_bitmap.width() as usize);
+    let y_max = min(size.height, glyph_bitmap.rows() as usize);
 
     let glyph_bitmap_buffer = glyph_bitmap.buffer();
 
@@ -39,9 +48,11 @@ impl CharacterPreview {
         }
     }
 
-    pub fn preview_for(&self, ch: char) -> Option<Bitmap> {
-        // TODO: What is the size?
-        if let Err(_) = self.font_face.set_pixel_sizes(WIDTH as u32, HEIGHT as u32) {
+    pub fn preview_for(&self, ch: char, size: &RenderSize) -> Option<Bitmap> {
+        if let Err(_) = self
+            .font_face
+            .set_pixel_sizes(size.width as u32, size.height as u32)
+        {
             return None;
         }
 
@@ -52,6 +63,6 @@ impl CharacterPreview {
             return None;
         }
 
-        Some(glyph_to_bitmap(self.font_face.glyph()))
+        Some(glyph_to_bitmap(self.font_face.glyph(), size))
     }
 }

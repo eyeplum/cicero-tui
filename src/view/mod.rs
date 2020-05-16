@@ -1,4 +1,5 @@
 mod character_detail_view;
+mod character_preview_canvas;
 mod main_view;
 mod stateful_graphemes;
 

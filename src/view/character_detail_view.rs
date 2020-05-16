@@ -1,46 +1,42 @@
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Modifier, Style};
-use tui::widgets::canvas::{Canvas, Painter, Shape};
+use tui::style::{Modifier, Style};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 use unic::char::property::EnumeratedCharProperty;
 use unic::ucd::{Age, GeneralCategory, Name};
 
-use crate::preview::{Bitmap, CharacterPreview};
 use crate::ucd::Plane;
+use crate::view::character_preview_canvas::CharacterPreviewCanvas;
 use crate::view::code_point_description;
 use crate::view::main_view::TerminalFrame;
 
 pub struct CharacterDetailView {
     pub chr: char,
+    character_preview_canvas: CharacterPreviewCanvas,
 }
 
 impl CharacterDetailView {
     pub fn new(chr: char) -> Self {
-        CharacterDetailView { chr }
+        CharacterDetailView {
+            chr,
+            character_preview_canvas: CharacterPreviewCanvas::new(),
+        }
     }
 
     const NOT_AVAILABLE_DISPLAY_TEXT: &'static str = "N/A";
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
         let chunks = Layout::default()
-            .constraints([Constraint::Length(20), Constraint::Min(7)].as_ref())
+            .constraints([Constraint::Length(20), Constraint::Min(10)].as_ref())
             .direction(Direction::Vertical)
             .split(rect);
 
-        let canvas = Canvas::default()
-            .block(Block::default().title("Preview").borders(Borders::ALL))
-            .x_bounds([0.0, 128.0])
-            .y_bounds([0.0, 128.0])
-            .paint(|ctx| {
-                let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"; // FIXME: Remove hard coded font path
-                let character_preview = CharacterPreview::new(font_path).unwrap();
-                ctx.draw(&CharacterPreviewShape {
-                    bitmap: character_preview.preview_for(self.chr).unwrap(),
-                });
-            });
+        self.character_preview_canvas
+            .draw(frame, chunks[0], self.chr);
 
-        frame.render_widget(canvas, chunks[0]);
+        self.draw_character_properties(frame, chunks[1]);
+    }
 
+    fn draw_character_properties(&self, frame: &mut TerminalFrame, rect: Rect) {
         let code_point_description = code_point_description(self.chr);
 
         let name_description = match Name::of(self.chr) {
@@ -82,23 +78,6 @@ impl CharacterDetailView {
             .alignment(Alignment::Center)
             .wrap(true);
 
-        frame.render_widget(paragraph, chunks[1]);
-    }
-}
-
-struct CharacterPreviewShape {
-    bitmap: Bitmap,
-}
-
-impl Shape for CharacterPreviewShape {
-    fn draw(&self, painter: &mut Painter) {
-        for y in 0..self.bitmap.len() {
-            for x in 0..self.bitmap[y].len() {
-                match self.bitmap[y][x] {
-                    p if p == 0 => {}
-                    _ => painter.paint(x, y, Color::Reset),
-                };
-            }
-        }
+        frame.render_widget(paragraph, rect);
     }
 }

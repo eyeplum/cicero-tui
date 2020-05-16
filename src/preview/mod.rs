@@ -1,2 +1,2 @@
 mod character_preview;
-pub use character_preview::{Bitmap, CharacterPreview};
+pub use character_preview::{Bitmap, CharacterPreview, RenderSize};

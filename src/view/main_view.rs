@@ -129,7 +129,13 @@ impl MainView {
 
     fn handle_key_event(&mut self, event: KeyEvent, app_state: &mut ApplicationState) {
         match event.code {
-            KeyCode::Esc => app_state.keep_running = false,
+            KeyCode::Esc => {
+                if self.character_detail_view.is_some() {
+                    self.character_detail_view = None;
+                } else {
+                    app_state.keep_running = false;
+                }
+            }
             KeyCode::Up => {
                 self.graphemes.select_previous();
                 if self.character_detail_view.is_some() {
@@ -144,21 +150,10 @@ impl MainView {
             }
             KeyCode::Enter => self.update_showing_detail(),
             KeyCode::Char(c) => {
-                if self.character_detail_view.is_some() {
-                    if c == 'q' {
-                        self.character_detail_view = None;
-                    }
-                    return;
-                }
-
                 self.user_input.push(c);
                 self.graphemes = StatefulGraphemes::new(&self.user_input);
             }
             KeyCode::Backspace => {
-                if self.character_detail_view.is_some() {
-                    return;
-                }
-
                 self.user_input.pop();
                 self.graphemes = StatefulGraphemes::new(&self.user_input);
             }
