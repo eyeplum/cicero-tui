@@ -5,7 +5,7 @@ use tui::style::Color;
 use tui::widgets::canvas::{Canvas, Painter, Shape};
 use tui::widgets::{Block, Borders};
 
-use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter};
+use crate::preview::{CharacterPreview, RenderSize};
 use crate::view::main_view::TerminalFrame;
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: usize = 2;
@@ -13,16 +13,11 @@ const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: usize = 4;
 
 const RENDER_PADDING_IN_CELLS: usize = 4;
 
-pub struct CharacterPreviewCanvas {
-    pub character_preview: CharacterPreview,
-}
+pub struct CharacterPreviewCanvas;
 
 impl CharacterPreviewCanvas {
     pub fn new() -> Self {
-        let font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"; // FIXME: Remove hard coded font path
-        CharacterPreviewCanvas {
-            character_preview: CharacterPreview::new(font_path).unwrap(), // FIXME: Force unwrap
-        }
+        CharacterPreviewCanvas {}
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect, chr: char) {
@@ -36,15 +31,14 @@ impl CharacterPreviewCanvas {
             .paint(|ctx| {
                 let render_pixel_length = min(canvas_pixel_width, canvas_pixel_height);
                 let render_pixel_size = RenderSize::new(render_pixel_length, render_pixel_length);
-                let rendered_character = self
-                    .character_preview
-                    .preview_for(chr, &render_pixel_size)
-                    .unwrap(); // FIXME: Force unwrap
+                if let Some(character_preview) = CharacterPreview::new(chr, render_pixel_size) {
+                    let canvas_pixel_size =
+                        RenderSize::new(canvas_pixel_width, canvas_pixel_height);
 
-                let canvas_pixel_size = RenderSize::new(canvas_pixel_width, canvas_pixel_height);
-
-                let shape = CharacterPreviewShape::new(rendered_character, canvas_pixel_size);
-                ctx.draw(&shape);
+                    let shape = CharacterPreviewShape::new(character_preview, canvas_pixel_size);
+                    ctx.draw(&shape);
+                }
+                // TODO: Handle error
             });
 
         frame.render_widget(canvas, rect);
@@ -52,21 +46,20 @@ impl CharacterPreviewCanvas {
 }
 
 struct CharacterPreviewShape {
-    rendered_character: RenderedCharacter,
+    character_preview: CharacterPreview,
     x_padding: usize,
     y_padding: usize,
 }
 
 impl CharacterPreviewShape {
-    fn new(rendered_character: RenderedCharacter, canvas_pixel_size: RenderSize) -> Self {
+    fn new(character_preview: CharacterPreview, canvas_pixel_size: RenderSize) -> Self {
         // TODO: Calculate padding according to glyph metrics
-        let x_padding =
-            (canvas_pixel_size.width - rendered_character.original_glyph_size.width) / 2;
+        let x_padding = (canvas_pixel_size.width - character_preview.original_glyph_size.width) / 2;
         let y_padding =
-            (canvas_pixel_size.height - rendered_character.original_glyph_size.height) / 2;
+            (canvas_pixel_size.height - character_preview.original_glyph_size.height) / 2;
 
         CharacterPreviewShape {
-            rendered_character,
+            character_preview,
             x_padding,
             y_padding,
         }
@@ -75,13 +68,17 @@ impl CharacterPreviewShape {
 
 impl Shape for CharacterPreviewShape {
     fn draw(&self, painter: &mut Painter) {
-        let bitmap = &self.rendered_character.bitmap;
+        let bitmap = &self.character_preview.bitmap;
 
         for y in 0..bitmap.len() {
             for x in 0..bitmap[y].len() {
                 match bitmap[y][x] {
                     p if p == 0 => {}
-                    _ => painter.paint(x + self.x_padding, y + self.y_padding, Color::Reset),
+                    _ => painter.paint(
+                        x + self.x_padding as usize,
+                        y + self.y_padding as usize,
+                        Color::Reset,
+                    ),
                 };
             }
         }

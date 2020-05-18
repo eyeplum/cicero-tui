@@ -1,5 +1,12 @@
-use freetype::{Face, GlyphSlot, Library};
 use std::cmp::min;
+
+use font_kit::canvas::{Canvas, Format, RasterizationOptions};
+use font_kit::family_name::FamilyName;
+use font_kit::hinting::HintingOptions;
+use font_kit::properties::Properties;
+use font_kit::source::SystemSource;
+use pathfinder_geometry::transform2d::Transform2F;
+use pathfinder_geometry::vector::Vector2I;
 
 #[derive(Debug)]
 pub struct RenderSize {
@@ -13,65 +20,82 @@ impl RenderSize {
     }
 }
 
-pub struct RenderedCharacter {
+#[derive(Debug)]
+pub struct CharacterPreview {
     pub bitmap: Vec<Vec<u8>>,
     pub original_glyph_size: RenderSize, // TODO: Expose all glyph metrics
 }
 
-fn render_glyph(glyph: &GlyphSlot, size: &RenderSize) -> RenderedCharacter {
-    let mut bitmap = vec![vec![0; size.width as usize]; size.height as usize];
-
-    let glyph_bitmap = glyph.bitmap();
-    let x_max = min(size.width, glyph_bitmap.width() as usize);
-    let y_max = min(size.height, glyph_bitmap.rows() as usize);
-
-    let glyph_bitmap_buffer = glyph_bitmap.buffer();
-
-    for x in 0..x_max {
-        for y in 0..y_max {
-            bitmap[y][x] = glyph_bitmap_buffer[y * x_max + x];
-        }
-    }
-
-    RenderedCharacter {
-        bitmap,
-        original_glyph_size: RenderSize::new(
-            glyph_bitmap.width() as usize,
-            glyph_bitmap.rows() as usize,
-        ),
-    }
-}
-
-pub struct CharacterPreview {
-    font_face: Face,
-}
-
 impl CharacterPreview {
-    pub fn new(font_path: &str) -> Option<Self> {
-        match Library::init() {
-            Ok(library) => match library.new_face(font_path, 0) {
-                Ok(font_face) => Some(Self { font_face }),
-                Err(_) => None,
-            },
-            Err(_) => None,
-        }
-    }
-
-    pub fn preview_for(&self, ch: char, size: &RenderSize) -> Option<RenderedCharacter> {
-        if let Err(_) = self
-            .font_face
-            .set_pixel_sizes(size.width as u32, size.height as u32)
+    pub fn new(chr: char, render_size: RenderSize) -> Option<CharacterPreview> {
+        if let Ok(font) =
+            SystemSource::new().select_best_match(&[FamilyName::SansSerif], &Properties::default())
         {
-            return None;
-        }
+            if let Ok(loaded_font) = font.load() {
+                if let Some(glyph_id) = loaded_font.glyph_for_char(chr) {
+                    let point_size = min(render_size.width, render_size.height) as f32; // TODO: What's the relation between point size and pixel size?
+                    let transform = Transform2F::default();
+                    let hinting = HintingOptions::None;
+                    let rasterization = RasterizationOptions::Bilevel;
 
-        if let Err(_) = self
-            .font_face
-            .load_char(ch as usize, freetype::face::LoadFlag::RENDER)
-        {
-            return None;
-        }
+                    match loaded_font.raster_bounds(
+                        glyph_id,
+                        point_size,
+                        transform,
+                        hinting,
+                        rasterization,
+                    ) {
+                        Err(_) => return None,
+                        Ok(raster_bounds) => {
+                            let mut canvas = Canvas::new(
+                                Vector2I::new(raster_bounds.width(), raster_bounds.height()),
+                                Format::A8,
+                            );
 
-        Some(render_glyph(self.font_face.glyph(), size))
+                            match loaded_font.rasterize_glyph(
+                                &mut canvas,
+                                glyph_id,
+                                point_size,
+                                Transform2F::from_translation(-raster_bounds.origin().to_f32())
+                                    * transform,
+                                hinting,
+                                rasterization,
+                            ) {
+                                Err(_) => None,
+                                Ok(_) => {
+                                    let mut bitmap = vec![
+                                        vec![0; raster_bounds.width() as usize];
+                                        raster_bounds.height() as usize
+                                    ];
+
+                                    for y in 0..raster_bounds.height() {
+                                        let row_start = y as usize * canvas.stride;
+                                        let row_end = (y + 1) as usize * canvas.stride;
+                                        let row = &canvas.pixels[row_start..row_end];
+                                        for x in 0..raster_bounds.width() {
+                                            bitmap[y as usize][x as usize] = row[x as usize];
+                                        }
+                                    }
+
+                                    Some(CharacterPreview {
+                                        bitmap,
+                                        original_glyph_size: RenderSize::new(
+                                            raster_bounds.width() as usize,
+                                            raster_bounds.height() as usize,
+                                        ),
+                                    })
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }

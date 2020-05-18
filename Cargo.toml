@@ -6,7 +6,8 @@ edition = "2018"
 
 [dependencies]
 crossterm = "0.17"
-freetype-rs = "0.24"
+font-kit = "0.7"
+pathfinder_geometry = "0.5"
 
 [dependencies.tui]
 version = "0.9"
