@@ -21,6 +21,7 @@ impl CharacterPreviewCanvas {
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect, chr: char) {
+        // TODO: Make sure subtractions never overflow
         let canvas_pixel_width = (rect.width as usize - RENDER_PADDING_IN_CELLS)
             * BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL;
         let canvas_pixel_height = (rect.height as usize - RENDER_PADDING_IN_CELLS)

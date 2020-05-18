@@ -28,6 +28,7 @@ pub struct CharacterPreview {
 
 impl CharacterPreview {
     pub fn new(chr: char, render_size: RenderSize) -> Option<CharacterPreview> {
+        // TODO: Implement font fallback
         if let Ok(font) =
             SystemSource::new().select_best_match(&[FamilyName::SansSerif], &Properties::default())
         {
