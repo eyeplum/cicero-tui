@@ -32,7 +32,7 @@ impl CharacterPreviewCanvas {
             .paint(|ctx| {
                 let render_pixel_length = min(canvas_pixel_width, canvas_pixel_height);
                 let render_pixel_size = RenderSize::new(render_pixel_length, render_pixel_length);
-                if let Some(character_preview) = CharacterPreview::new(chr, render_pixel_size) {
+                if let Ok(character_preview) = CharacterPreview::new(chr, render_pixel_size) {
                     let canvas_pixel_size =
                         RenderSize::new(canvas_pixel_width, canvas_pixel_height);
 
@@ -69,18 +69,17 @@ impl CharacterPreviewShape {
 
 impl Shape for CharacterPreviewShape {
     fn draw(&self, painter: &mut Painter) {
-        let bitmap = &self.character_preview.bitmap;
+        for (y, row) in self.character_preview.bitmap.iter().enumerate() {
+            for (x, pixel) in row.iter().enumerate() {
+                if *pixel == 0u8 {
+                    continue;
+                }
 
-        for y in 0..bitmap.len() {
-            for x in 0..bitmap[y].len() {
-                match bitmap[y][x] {
-                    p if p == 0 => {}
-                    _ => painter.paint(
-                        x + self.x_padding as usize,
-                        y + self.y_padding as usize,
-                        Color::Reset,
-                    ),
-                };
+                painter.paint(
+                    x + self.x_padding as usize,
+                    y + self.y_padding as usize,
+                    Color::Reset,
+                )
             }
         }
     }
