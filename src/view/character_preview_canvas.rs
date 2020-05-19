@@ -8,10 +8,10 @@ use tui::widgets::{Block, Borders};
 use crate::preview::{CharacterPreview, RenderSize};
 use crate::view::main_view::TerminalFrame;
 
-const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: usize = 2;
-const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: usize = 4;
+const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
+const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
 
-const RENDER_PADDING_IN_CELLS: usize = 4;
+const RENDER_PADDING_IN_CELLS: u16 = 4;
 
 pub struct CharacterPreviewCanvas;
 
@@ -21,25 +21,37 @@ impl CharacterPreviewCanvas {
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect, chr: char) {
-        // TODO: Make sure subtractions never overflow
-        let canvas_pixel_width = (rect.width as usize - RENDER_PADDING_IN_CELLS)
-            * BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL;
-        let canvas_pixel_height = (rect.height as usize - RENDER_PADDING_IN_CELLS)
-            * BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL;
+        if rect.width < RENDER_PADDING_IN_CELLS || rect.height < RENDER_PADDING_IN_CELLS {
+            return;
+        }
+
+        let canvas_pixel_width =
+            (rect.width - RENDER_PADDING_IN_CELLS) * BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL;
+        let canvas_pixel_height =
+            (rect.height - RENDER_PADDING_IN_CELLS) * BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL;
 
         let canvas = Canvas::default()
             .block(Block::default().title("Preview").borders(Borders::ALL))
             .paint(|ctx| {
                 let render_pixel_length = min(canvas_pixel_width, canvas_pixel_height);
-                let render_pixel_size = RenderSize::new(render_pixel_length, render_pixel_length);
-                if let Ok(character_preview) = CharacterPreview::new(chr, render_pixel_size) {
-                    let canvas_pixel_size =
-                        RenderSize::new(canvas_pixel_width, canvas_pixel_height);
+                let render_pixel_size =
+                    RenderSize::new(render_pixel_length as usize, render_pixel_length as usize);
 
-                    let shape = CharacterPreviewShape::new(character_preview, canvas_pixel_size);
-                    ctx.draw(&shape);
+                match CharacterPreview::new(chr, render_pixel_size) {
+                    Ok(character_preview) => {
+                        let canvas_pixel_size = RenderSize::new(
+                            canvas_pixel_width as usize,
+                            canvas_pixel_height as usize,
+                        );
+
+                        let shape =
+                            CharacterPreviewShape::new(character_preview, canvas_pixel_size);
+                        ctx.draw(&shape);
+                    }
+                    Err(_) => {
+                        // TODO: Handle error
+                    }
                 }
-                // TODO: Handle error
             });
 
         frame.render_widget(canvas, rect);

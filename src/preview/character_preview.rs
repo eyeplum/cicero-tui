@@ -62,7 +62,7 @@ impl CharacterPreview {
                 return Err(Box::new(Error::GlyphNotFound {
                     chr,
                     font_name: font.full_name(),
-                }))
+                }));
             }
         };
 
