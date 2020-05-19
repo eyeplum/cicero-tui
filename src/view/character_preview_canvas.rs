@@ -37,21 +37,33 @@ impl CharacterPreviewCanvas {
                 let render_pixel_size =
                     RenderSize::new(render_pixel_length as usize, render_pixel_length as usize);
 
+                let canvas_pixel_size =
+                    RenderSize::new(canvas_pixel_width as usize, canvas_pixel_height as usize);
+
                 match CharacterPreview::new(chr, render_pixel_size) {
                     Ok(character_preview) => {
-                        let canvas_pixel_size = RenderSize::new(
-                            canvas_pixel_width as usize,
-                            canvas_pixel_height as usize,
-                        );
-
-                        let shape =
-                            CharacterPreviewShape::new(character_preview, canvas_pixel_size);
-                        ctx.draw(&shape);
+                        let x_padding = (canvas_pixel_size.width
+                            - character_preview.original_glyph_size.width)
+                            / 2;
+                        let y_padding = (canvas_pixel_size.height
+                            - character_preview.original_glyph_size.height)
+                            / 2;
+                        ctx.draw(&CharacterPreviewShape {
+                            character_preview,
+                            x_padding,
+                            y_padding,
+                        })
                     }
                     Err(_) => {
-                        // TODO: Handle error
+                        let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
+                        let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
+                        ctx.draw(&ToufuShape {
+                            size: render_pixel_size,
+                            x_padding,
+                            y_padding,
+                        })
                     }
-                }
+                };
             });
 
         frame.render_widget(canvas, rect);
@@ -62,21 +74,6 @@ struct CharacterPreviewShape {
     character_preview: CharacterPreview,
     x_padding: usize,
     y_padding: usize,
-}
-
-impl CharacterPreviewShape {
-    fn new(character_preview: CharacterPreview, canvas_pixel_size: RenderSize) -> Self {
-        // TODO: Calculate padding according to glyph metrics
-        let x_padding = (canvas_pixel_size.width - character_preview.original_glyph_size.width) / 2;
-        let y_padding =
-            (canvas_pixel_size.height - character_preview.original_glyph_size.height) / 2;
-
-        CharacterPreviewShape {
-            character_preview,
-            x_padding,
-            y_padding,
-        }
-    }
 }
 
 impl Shape for CharacterPreviewShape {
@@ -92,6 +89,22 @@ impl Shape for CharacterPreviewShape {
                     y + self.y_padding as usize,
                     Color::Reset,
                 )
+            }
+        }
+    }
+}
+
+struct ToufuShape {
+    size: RenderSize,
+    x_padding: usize,
+    y_padding: usize,
+}
+
+impl Shape for ToufuShape {
+    fn draw(&self, painter: &mut Painter) {
+        for x in 0..self.size.width {
+            for y in 0..self.size.height {
+                painter.paint(x + self.x_padding, y + self.y_padding, Color::Reset)
             }
         }
     }

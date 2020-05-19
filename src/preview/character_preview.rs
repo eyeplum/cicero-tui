@@ -4,13 +4,14 @@ use std::fmt;
 
 use font_kit::canvas::{Canvas, Format, RasterizationOptions};
 use font_kit::family_name::FamilyName;
+use font_kit::font::Font;
 use font_kit::hinting::HintingOptions;
 use font_kit::properties::Properties;
 use font_kit::source::SystemSource;
 use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::vector::Vector2I;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct RenderSize {
     pub width: usize,
     pub height: usize,
@@ -26,22 +27,44 @@ type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 #[derive(Debug)]
 pub enum Error {
-    GlyphNotFound { chr: char, font_name: String },
+    GlyphNotFound { chr: char },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::GlyphNotFound { chr, font_name } => write!(
+            Error::GlyphNotFound { chr } => write!(
                 f,
-                "Glyph for U+{:04X} not found in font '{}'",
-                *chr as u32, font_name
+                "Glyph for U+{:04X} not found in all system fonts",
+                *chr as u32
             ),
         }
     }
 }
 
 impl error::Error for Error {}
+
+fn search_for_glyph_in_system_fonts(chr: char) -> Result<(Font, u32)> {
+    // TODO: Cache fonts in a "font library"
+    let system_source = SystemSource::new();
+
+    let default_font = system_source
+        .select_best_match(&[FamilyName::SansSerif], &Properties::default())?
+        .load()?;
+    if let Some(glyph_id) = default_font.glyph_for_char(chr) {
+        return Ok((default_font, glyph_id));
+    }
+
+    let all_fonts = system_source.all_fonts()?;
+    for handle in all_fonts {
+        let fallback_font = handle.load()?;
+        if let Some(glyph_id) = fallback_font.glyph_for_char(chr) {
+            return Ok((fallback_font, glyph_id));
+        }
+    }
+
+    Err(Box::new(Error::GlyphNotFound { chr }))
+}
 
 #[derive(Debug)]
 pub struct CharacterPreview {
@@ -51,20 +74,7 @@ pub struct CharacterPreview {
 
 impl CharacterPreview {
     pub fn new(chr: char, render_size: RenderSize) -> Result<CharacterPreview> {
-        // TODO: Implement font fallback
-        let font = SystemSource::new()
-            .select_best_match(&[FamilyName::SansSerif], &Properties::default())?
-            .load()?;
-
-        let glyph_id = match font.glyph_for_char(chr) {
-            Some(glyph_id) => glyph_id,
-            None => {
-                return Err(Box::new(Error::GlyphNotFound {
-                    chr,
-                    font_name: font.full_name(),
-                }));
-            }
-        };
+        let (font, glyph_id) = search_for_glyph_in_system_fonts(chr)?;
 
         // TODO: What's the relation between point size and pixel size?
         let point_size = min(render_size.width, render_size.height) as f32;
