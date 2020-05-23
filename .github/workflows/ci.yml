@@ -1,4 +1,4 @@
-name: Rust
+name: CI
 
 on: [push]
 
@@ -12,6 +12,11 @@ jobs:
         rust: [stable, nightly]
 
     steps:
+    - name: (macOS only) Install fontconfig with Homebrew
+      if: ${{ runner.os == 'macOS' }}
+      run: |
+        brew install pkg-config fontconfig
+        pkg-config --libs --static fontconfig
     - uses: actions/checkout@v2
     - name: Build
       run: cargo build --verbose
