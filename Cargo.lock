@@ -78,6 +78,7 @@ dependencies = [
  "crossterm",
  "font-kit",
  "pathfinder_geometry",
+ "servo-fontconfig",
  "tui",
  "unic",
 ]
@@ -561,9 +562,9 @@ dependencies = [
 
 [[package]]
 name = "servo-freetype-sys"
-version = "4.0.5"
+version = "4.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c4ccb6d0d32d277d3ef7dea86203d8210945eb7a45fba89dd445b3595dd0dfc"
+checksum = "9232032c2e85118c0282c6562c84cab12316e655491ba0a5d1905b2320060d1b"
 dependencies = [
  "cmake",
  "pkg-config",

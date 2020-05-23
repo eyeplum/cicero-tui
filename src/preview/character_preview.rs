@@ -11,6 +11,18 @@ use font_kit::source::SystemSource;
 use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::vector::Vector2I;
 
+#[cfg(unix)]
+use fontconfig::fontconfig::{
+    FcCharSetAddChar, FcCharSetCreate, FcFontList, FcObjectSetAdd, FcObjectSetCreate,
+    FcPatternAddCharSet, FcPatternCreate, FcPatternGetString, FcResultMatch,
+};
+#[cfg(unix)]
+use std::ffi;
+#[cfg(unix)]
+use std::ffi::CStr;
+#[cfg(unix)]
+use std::os::raw::c_char;
+
 #[derive(Debug, Copy, Clone)]
 pub struct RenderSize {
     pub width: usize,
@@ -45,9 +57,8 @@ impl fmt::Display for Error {
 impl error::Error for Error {}
 
 fn search_for_glyph_in_system_fonts(chr: char) -> Result<(Font, u32)> {
-    // TODO: Cache fonts in a "font library"
+    // Use font-kit to find the best Sans Serif font
     let system_source = SystemSource::new();
-
     let default_font = system_source
         .select_best_match(&[FamilyName::SansSerif], &Properties::default())?
         .load()?;
@@ -55,14 +66,47 @@ fn search_for_glyph_in_system_fonts(chr: char) -> Result<(Font, u32)> {
         return Ok((default_font, glyph_id));
     }
 
-    let all_fonts = system_source.all_fonts()?;
-    for handle in all_fonts {
-        let fallback_font = handle.load()?;
-        if let Some(glyph_id) = fallback_font.glyph_for_char(chr) {
-            return Ok((fallback_font, glyph_id));
+    #[cfg(unix)]
+    // Failed to find a Sans Serif font for chr, try fontconfig (because servo-fontconfig-sys is
+    // only available on Unix platforms, so font fallback is only available on Unix as well)
+    // TODO: Fix memory leaks
+    // TODO: Fix force unwraps
+    // TODO: Prefer Sans Serif fonts in fallback
+    unsafe {
+        let char_set = FcCharSetCreate();
+        FcCharSetAddChar(char_set, chr as u32);
+
+        let pattern = FcPatternCreate();
+        FcPatternAddCharSet(
+            pattern,
+            ffi::CString::new("charset").unwrap().as_ptr(),
+            char_set,
+        );
+
+        let object_set = FcObjectSetCreate();
+        FcObjectSetAdd(object_set, ffi::CString::new("file").unwrap().as_ptr());
+
+        let font_set = FcFontList(std::ptr::null_mut(), pattern, object_set);
+        if (*font_set).nfont > 0 {
+            let mut value: *mut u8 = std::ptr::null_mut();
+            let result = FcPatternGetString(
+                *(*font_set).fonts,
+                ffi::CString::new("file").unwrap().as_ptr(),
+                0,
+                &mut value as *mut *mut u8,
+            );
+
+            if result == FcResultMatch {
+                let font_path = CStr::from_ptr(value as *mut c_char).to_str()?;
+                let fallback_font = Font::from_path(font_path, 0)?;
+                if let Some(glyph_id) = fallback_font.glyph_for_char(chr) {
+                    return Ok((fallback_font, glyph_id));
+                }
+            }
         }
     }
 
+    // Unable to find a font for chr
     Err(Box::new(Error::GlyphNotFound { chr }))
 }
 

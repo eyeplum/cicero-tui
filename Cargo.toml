@@ -17,3 +17,6 @@ features = ["crossterm"]
 [dependencies.unic]
 git = "https://github.com/eyeplum/rust-unic.git"
 branch = "develop"
+
+[target.'cfg(unix)'.dependencies]
+servo-fontconfig = "0.4"
