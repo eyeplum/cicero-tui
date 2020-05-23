@@ -1,8 +1,7 @@
 mod character_preview;
-pub use character_preview::{CharacterPreview, RenderSize};
+mod font_match;
 
-#[cfg(unix)]
-mod unix_font_fallback;
+pub use character_preview::{CharacterPreview, RenderSize};
 
 use std::error;
 use std::fmt;

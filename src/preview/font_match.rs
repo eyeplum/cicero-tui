@@ -2,12 +2,11 @@ use std::ffi;
 use std::ffi::CStr;
 use std::os::raw::c_char;
 
-use font_kit::font::Font;
 use fontconfig::fontconfig as fc;
 
 use crate::preview::{Error, Result};
 
-pub(super) fn fallback_font_for(chr: char) -> Result<(Font, u32)> {
+pub fn font_for(chr: char) -> Result<String> {
     unsafe {
         let char_set = fc::FcCharSetCreate();
         defer! {
@@ -35,7 +34,7 @@ pub(super) fn fallback_font_for(chr: char) -> Result<(Font, u32)> {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
-        // TODO: Make the fallback prefer Sans Serif fonts in fallback
+        // TODO: Prefer Sans Serif fonts
 
         let mut value: *mut u8 = std::ptr::null_mut();
         let result = fc::FcPatternGetString(
@@ -49,12 +48,6 @@ pub(super) fn fallback_font_for(chr: char) -> Result<(Font, u32)> {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
-        let font_path = CStr::from_ptr(value as *mut c_char).to_str()?;
-
-        let fallback_font = Font::from_path(font_path, 0)?;
-        match fallback_font.glyph_for_char(chr) {
-            Some(glyph_id) => Ok((fallback_font, glyph_id)),
-            None => Err(Box::new(Error::GlyphNotFound { chr })),
-        }
+        Ok(CStr::from_ptr(value as *mut c_char).to_str()?.to_owned())
     }
 }

@@ -1,22 +1,18 @@
 #![warn(clippy::all)]
 
-#[cfg(unix)]
 #[macro_use(defer)]
 extern crate scopeguard;
 
 use crossterm::Result;
 
 mod application_state;
-use application_state::ApplicationState;
-
 mod preview;
-
 mod renderer;
-use renderer::Renderer;
-
 mod ucd;
-
 mod view;
+
+use application_state::ApplicationState;
+use renderer::Renderer;
 use view::MainView;
 
 fn run_tui() -> Result<()> {

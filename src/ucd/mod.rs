@@ -9,6 +9,7 @@
 //!
 
 mod plane;
+
 pub use plane::Plane;
 
 #[derive(Default, Debug, Copy, Clone)]
