@@ -1,5 +1,6 @@
 #![warn(clippy::all)]
 
+#[cfg(unix)]
 #[macro_use(defer)]
 extern crate scopeguard;
 
