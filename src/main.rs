@@ -1,5 +1,8 @@
 #![warn(clippy::all)]
 
+#[macro_use(defer)]
+extern crate scopeguard;
+
 use crossterm::Result;
 
 mod application_state;

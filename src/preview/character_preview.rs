@@ -1,6 +1,4 @@
 use std::cmp::min;
-use std::error;
-use std::fmt;
 
 use font_kit::canvas::{Canvas, Format, RasterizationOptions};
 use font_kit::family_name::FamilyName;
@@ -11,17 +9,10 @@ use font_kit::source::SystemSource;
 use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::vector::Vector2I;
 
+use crate::preview::Result;
+
 #[cfg(unix)]
-use fontconfig::fontconfig::{
-    FcCharSetAddChar, FcCharSetCreate, FcFontList, FcObjectSetAdd, FcObjectSetCreate,
-    FcPatternAddCharSet, FcPatternCreate, FcPatternGetString, FcResultMatch,
-};
-#[cfg(unix)]
-use std::ffi;
-#[cfg(unix)]
-use std::ffi::CStr;
-#[cfg(unix)]
-use std::os::raw::c_char;
+use crate::preview::unix_font_fallback::fallback_font_for;
 
 #[derive(Debug, Copy, Clone)]
 pub struct RenderSize {
@@ -35,29 +26,8 @@ impl RenderSize {
     }
 }
 
-type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
-
-#[derive(Debug)]
-pub enum Error {
-    GlyphNotFound { chr: char },
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::GlyphNotFound { chr } => write!(
-                f,
-                "Glyph for U+{:04X} not found in all system fonts",
-                *chr as u32
-            ),
-        }
-    }
-}
-
-impl error::Error for Error {}
-
-fn search_for_glyph_in_system_fonts(chr: char) -> Result<(Font, u32)> {
-    // Use font-kit to find the best Sans Serif font
+fn find_font_and_glyph_for(chr: char) -> Result<(Font, u32)> {
+    // Use font-kit to find the default Sans Serif font
     let system_source = SystemSource::new();
     let default_font = system_source
         .select_best_match(&[FamilyName::SansSerif], &Properties::default())?
@@ -67,47 +37,12 @@ fn search_for_glyph_in_system_fonts(chr: char) -> Result<(Font, u32)> {
     }
 
     #[cfg(unix)]
-    // Failed to find a Sans Serif font for chr, try fontconfig (because servo-fontconfig-sys is
-    // only available on Unix platforms, so font fallback is only available on Unix as well)
-    // TODO: Fix memory leaks
-    // TODO: Fix force unwraps
-    // TODO: Prefer Sans Serif fonts in fallback
-    unsafe {
-        let char_set = FcCharSetCreate();
-        FcCharSetAddChar(char_set, chr as u32);
+    // Unable to find a glyph for chr in the default font, look for a fallback font if on Unix
+    return fallback_font_for(chr);
 
-        let pattern = FcPatternCreate();
-        FcPatternAddCharSet(
-            pattern,
-            ffi::CString::new("charset").unwrap().as_ptr(),
-            char_set,
-        );
-
-        let object_set = FcObjectSetCreate();
-        FcObjectSetAdd(object_set, ffi::CString::new("file").unwrap().as_ptr());
-
-        let font_set = FcFontList(std::ptr::null_mut(), pattern, object_set);
-        if (*font_set).nfont > 0 {
-            let mut value: *mut u8 = std::ptr::null_mut();
-            let result = FcPatternGetString(
-                *(*font_set).fonts,
-                ffi::CString::new("file").unwrap().as_ptr(),
-                0,
-                &mut value as *mut *mut u8,
-            );
-
-            if result == FcResultMatch {
-                let font_path = CStr::from_ptr(value as *mut c_char).to_str()?;
-                let fallback_font = Font::from_path(font_path, 0)?;
-                if let Some(glyph_id) = fallback_font.glyph_for_char(chr) {
-                    return Ok((fallback_font, glyph_id));
-                }
-            }
-        }
-    }
-
-    // Unable to find a font for chr
-    Err(Box::new(Error::GlyphNotFound { chr }))
+    #[cfg(not(unix))]
+    // Unable to find a glyph for chr in the default font
+    Err(Box::new(crate::preview::Error::GlyphNotFound { chr }))
 }
 
 #[derive(Debug)]
@@ -118,7 +53,7 @@ pub struct CharacterPreview {
 
 impl CharacterPreview {
     pub fn new(chr: char, render_size: RenderSize) -> Result<CharacterPreview> {
-        let (font, glyph_id) = search_for_glyph_in_system_fonts(chr)?;
+        let (font, glyph_id) = find_font_and_glyph_for(chr)?;
 
         // TODO: What's the relation between point size and pixel size?
         let point_size = min(render_size.width, render_size.height) as f32;

@@ -78,6 +78,7 @@ dependencies = [
  "crossterm",
  "font-kit",
  "pathfinder_geometry",
+ "scopeguard",
  "servo-fontconfig",
  "tui",
  "unic",
