@@ -7,7 +7,6 @@ edition = "2018"
 [dependencies]
 crossterm = "0.17"
 freetype-rs = "0.25"
-pathfinder_geometry = "0.5"
 servo-fontconfig = "0.5"
 scopeguard = "1.1"
 
