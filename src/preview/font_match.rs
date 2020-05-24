@@ -61,6 +61,8 @@ pub fn fonts_for(chr: char) -> Result<Vec<String>> {
                 let font_path = CStr::from_ptr(value as *mut c_char).to_str()?.to_owned();
                 font_paths.push(font_path);
             }
+
+            font_paths.sort();
         }
         Ok(font_paths)
     }

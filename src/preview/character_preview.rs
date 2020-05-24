@@ -166,3 +166,5 @@ impl CharacterPreview {
         Ok(RenderedCharacter { bitmap, glyph_size })
     }
 }
+
+// TODO: Unit test for StatefulVec
