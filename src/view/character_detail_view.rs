@@ -18,7 +18,7 @@ impl CharacterDetailView {
     pub fn new(chr: char) -> Self {
         CharacterDetailView {
             chr,
-            character_preview_canvas: CharacterPreviewCanvas::new(),
+            character_preview_canvas: CharacterPreviewCanvas::new(chr),
         }
     }
 
@@ -28,10 +28,16 @@ impl CharacterDetailView {
             .direction(Direction::Vertical)
             .split(rect);
 
-        self.character_preview_canvas
-            .draw(frame, chunks[0], self.chr);
-
+        self.character_preview_canvas.draw(frame, chunks[0]);
         self.draw_character_properties(frame, chunks[1]);
+    }
+
+    pub fn previous_preview_font(&mut self) {
+        self.character_preview_canvas.previous_preview_font();
+    }
+
+    pub fn next_preview_font(&mut self) {
+        self.character_preview_canvas.next_preview_font();
     }
 
     const NOT_AVAILABLE_DISPLAY_TEXT: &'static str = "N/A";

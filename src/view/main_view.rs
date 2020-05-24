@@ -148,6 +148,16 @@ impl MainView {
                     self.update_showing_detail();
                 }
             }
+            KeyCode::Left => {
+                if let Some(character_detail_view) = &mut self.character_detail_view {
+                    character_detail_view.previous_preview_font();
+                }
+            }
+            KeyCode::Right => {
+                if let Some(character_detail_view) = &mut self.character_detail_view {
+                    character_detail_view.next_preview_font();
+                }
+            }
             KeyCode::Enter => self.update_showing_detail(),
             KeyCode::Char(c) => {
                 self.user_input.push(c);

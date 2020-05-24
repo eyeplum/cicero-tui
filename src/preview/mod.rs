@@ -1,7 +1,7 @@
 mod character_preview;
 mod font_match;
 
-pub use character_preview::{CharacterPreview, RenderSize};
+pub use character_preview::{CharacterPreview, RenderSize, RenderedCharacter};
 
 use std::error;
 use std::fmt;
