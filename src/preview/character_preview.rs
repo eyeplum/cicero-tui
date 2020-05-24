@@ -2,8 +2,8 @@ use std::cmp::min;
 
 use freetype::Library;
 
-use crate::preview::font_match::font_for;
-use crate::preview::Result;
+use crate::preview::font_match::fonts_for;
+use crate::preview::{Error, Result};
 
 #[derive(Debug, Copy, Clone)]
 pub struct RenderSize {
@@ -25,11 +25,14 @@ pub struct CharacterPreview {
 
 impl CharacterPreview {
     pub fn new(chr: char, render_size: RenderSize) -> Result<CharacterPreview> {
-        let font_path = font_for(chr)?;
+        let fonts = fonts_for(chr)?;
+        if fonts.is_empty() {
+            return Err(Box::new(Error::GlyphNotFound { chr }));
+        }
 
         let library = Library::init()?;
 
-        let font_face = library.new_face(font_path, 0)?;
+        let font_face = library.new_face(&fonts[0], 0)?;
         font_face.set_pixel_sizes(render_size.width as u32, render_size.height as u32)?;
         font_face.load_char(chr as usize, freetype::face::LoadFlag::RENDER)?;
 

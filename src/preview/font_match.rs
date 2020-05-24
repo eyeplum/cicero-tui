@@ -1,12 +1,13 @@
 use std::ffi;
 use std::ffi::CStr;
 use std::os::raw::c_char;
+use std::slice;
 
 use fontconfig::fontconfig as fc;
 
 use crate::preview::{Error, Result};
 
-pub fn font_for(chr: char) -> Result<String> {
+pub fn fonts_for(chr: char) -> Result<Vec<String>> {
     unsafe {
         let char_set = fc::FcCharSetCreate();
         defer! {
@@ -30,24 +31,37 @@ pub fn font_for(chr: char) -> Result<String> {
         defer! {
             fc::FcFontSetDestroy(font_set);
         }
-        if (*font_set).nfont == 0 {
+
+        if (*font_set).nfont <= 0 {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
-        // TODO: Prefer Sans Serif fonts
+        let mut font_paths = vec![];
+        {
+            font_paths.reserve((*font_set).nfont as usize);
 
-        let mut value: *mut u8 = std::ptr::null_mut();
-        let result = fc::FcPatternGetString(
-            *(*font_set).fonts,
-            ffi::CString::new("file")?.as_ptr(),
-            0,
-            &mut value as *mut *mut u8,
-        );
+            let patterns_slice = slice::from_raw_parts::<*mut fc::FcPattern>(
+                (*font_set).fonts,
+                (*font_set).nfont as usize,
+            );
 
-        if result != fc::FcResultMatch {
-            return Err(Box::new(Error::GlyphNotFound { chr }));
+            for pattern in patterns_slice {
+                let mut value: *mut u8 = std::ptr::null_mut();
+                let result = fc::FcPatternGetString(
+                    *pattern,
+                    ffi::CString::new("file")?.as_ptr(),
+                    0,
+                    &mut value as *mut *mut u8,
+                );
+
+                if result != fc::FcResultMatch {
+                    return Err(Box::new(Error::GlyphNotFound { chr }));
+                }
+
+                let font_path = CStr::from_ptr(value as *mut c_char).to_str()?.to_owned();
+                font_paths.push(font_path);
+            }
         }
-
-        Ok(CStr::from_ptr(value as *mut c_char).to_str()?.to_owned())
+        Ok(font_paths)
     }
 }
