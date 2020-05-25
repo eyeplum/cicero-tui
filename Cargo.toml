@@ -5,6 +5,7 @@ authors = ["Yan Li <eyeplum@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+clap = "2.33"
 crossterm = "0.17"
 freetype-rs = "0.25"
 servo-fontconfig = "0.5"
