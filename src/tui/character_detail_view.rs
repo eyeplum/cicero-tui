@@ -4,10 +4,10 @@ use tui::widgets::{Block, Borders, Paragraph, Text};
 use unic::char::property::EnumeratedCharProperty;
 use unic::ucd::{Age, GeneralCategory, Name};
 
+use crate::tui::character_preview_canvas::CharacterPreviewCanvas;
+use crate::tui::code_point_description;
+use crate::tui::main_view::TerminalFrame;
 use crate::ucd::Plane;
-use crate::view::character_preview_canvas::CharacterPreviewCanvas;
-use crate::view::code_point_description;
-use crate::view::main_view::TerminalFrame;
 
 pub struct CharacterDetailView {
     pub chr: char,

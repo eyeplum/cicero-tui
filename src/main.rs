@@ -6,26 +6,19 @@ extern crate scopeguard;
 use clap::{App, Arg, ArgMatches};
 use crossterm::Result;
 
-mod application_state;
 mod preview;
-mod renderer;
+mod tui;
 mod ucd;
-mod view;
-
-use application_state::ApplicationState;
-use renderer::Renderer;
-use view::MainView;
 
 fn run_tui() -> Result<()> {
-    let mut state = ApplicationState::default();
+    let mut state = tui::ApplicationState::default();
 
-    let renderer = Renderer::new();
-    let mut main_view = MainView::new();
+    let renderer = tui::Renderer::new();
+    let mut main_view = tui::MainView::new();
 
     renderer.run(|terminal, keep_running| {
         main_view.update(terminal, &mut state)?;
         *keep_running = state.keep_running;
-
         Ok(())
     })
 }
@@ -53,7 +46,7 @@ fn main() -> Result<()> {
                 .value_name("FORMAT")
                 .help(
                     "Specify output format, text if not provided\n\
-                     valid values: text, json",
+                     Valid values: text, json",
                 ),
         )
         .arg(
@@ -64,10 +57,10 @@ fn main() -> Result<()> {
                 .value_name("TYPE")
                 .help(
                     "Specify input type, if not provided a best guess is performed on the input\n\
-                     Valid values: codepoints, string, file",
+                     Valid values: codepoints, string",
                 ),
         )
-        .arg(Arg::with_name("INPUT").help("a string, a file, or comma separated codepoints"))
+        .arg(Arg::with_name("INPUT").help("a string or comma separated codepoints"))
         .get_matches();
 
     if args.is_present("tui_mode") {

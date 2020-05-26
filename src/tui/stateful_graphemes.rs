@@ -5,7 +5,7 @@ use tui::widgets::ListState;
 use unic::segment::Graphemes;
 use unic::ucd::name::Name;
 
-use crate::view::code_point_description;
+use crate::tui::code_point_description;
 
 #[derive(Default)]
 pub struct GraphemeRow {

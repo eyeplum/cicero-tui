@@ -6,7 +6,7 @@ use tui::widgets::canvas::{Canvas, Painter, Shape};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 
 use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter, Result};
-use crate::view::main_view::TerminalFrame;
+use crate::tui::main_view::TerminalFrame;
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
 const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;

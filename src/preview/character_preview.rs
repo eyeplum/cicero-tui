@@ -3,6 +3,7 @@ use std::cmp::min;
 use freetype::{Face, Library};
 
 use crate::preview::font_match::fonts_for;
+use crate::preview::stateful_vec::StatefulVec;
 use crate::preview::{Error, Result};
 
 #[derive(Debug, Copy, Clone)]
@@ -21,57 +22,6 @@ impl RenderSize {
 pub struct RenderedCharacter {
     pub bitmap: Vec<Vec<u8>>, // TODO: This naive 2D vector is not really optimized
     pub glyph_size: RenderSize, // TODO: Expose all glyph metrics
-}
-
-const STATEFUL_VEC_CURRENT_INVALID: usize = usize::max_value();
-
-#[derive(Debug)]
-struct StatefulVec<T> {
-    storage: Vec<T>,
-    current: usize,
-}
-
-impl<T> StatefulVec<T> {
-    fn new(storage: Vec<T>, current: usize) -> Self {
-        if current + 1 > storage.len() {
-            StatefulVec {
-                storage,
-                current: STATEFUL_VEC_CURRENT_INVALID,
-            }
-        } else {
-            StatefulVec { storage, current }
-        }
-    }
-
-    fn has_previous(&self) -> bool {
-        !self.storage.is_empty() && self.current != STATEFUL_VEC_CURRENT_INVALID && self.current > 0
-    }
-
-    fn select_previous(&mut self) {
-        if !self.has_previous() {
-            return;
-        }
-
-        self.current -= 1;
-    }
-
-    fn has_next(&self) -> bool {
-        !self.storage.is_empty()
-            && self.current != STATEFUL_VEC_CURRENT_INVALID
-            && (self.current + 1 < self.storage.len())
-    }
-
-    fn select_next(&mut self) {
-        if !self.has_next() {
-            return;
-        }
-
-        self.current += 1;
-    }
-
-    fn current_item(&self) -> &T {
-        &self.storage[self.current]
-    }
 }
 
 pub struct CharacterPreview {
@@ -166,5 +116,3 @@ impl CharacterPreview {
         Ok(RenderedCharacter { bitmap, glyph_size })
     }
 }
-
-// TODO: Unit test for StatefulVec

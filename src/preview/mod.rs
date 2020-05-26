@@ -1,5 +1,13 @@
+//!
+//! This module implements character preview, which consists of two main functionalities:
+//! - Font matching, which finds the available fonts in the system and matches them with a given
+//!   character.
+//! - Glyph shaping, which turns a given character into a rendered bitmap using a font.
+//!
+
 mod character_preview;
 mod font_match;
+mod stateful_vec;
 
 pub use character_preview::{CharacterPreview, RenderSize, RenderedCharacter};
 
