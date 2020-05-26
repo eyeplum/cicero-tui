@@ -3,8 +3,7 @@
 //! Unicode Character Database.
 //!
 //! Some APIs in this module works with Unicode code points (as `u32`) instead of the built-in
-//! `char` because those APIs are intended to also work with isolated surrogate code points.
-//!
+//! `char` because those APIs are intended to also work with isolated surrogate code points -
 //! Cicero is a Unicode tool after all, so sometimes it needs to work with all aspects of Unicode.
 //!
 
