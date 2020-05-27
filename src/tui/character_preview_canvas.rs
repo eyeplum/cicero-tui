@@ -26,6 +26,8 @@ impl CharacterPreviewCanvas {
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
         let chunks = Layout::default()
+            .vertical_margin(1)
+            .horizontal_margin(1)
             .constraints(
                 [
                     Constraint::Min(RENDER_PADDING_IN_CELLS),
@@ -38,6 +40,7 @@ impl CharacterPreviewCanvas {
 
         self.draw_character_preview(frame, chunks[0]);
         self.draw_font_selection(frame, chunks[1]);
+        self.draw_borders(frame, rect);
     }
 
     pub fn previous_preview_font(&mut self) {
@@ -67,44 +70,31 @@ impl CharacterPreviewCanvas {
             return;
         }
 
-        let canvas = Canvas::default()
-            .block(Block::default().title("Preview").borders(Borders::ALL))
-            .paint(|ctx| {
-                let canvas_pixel_width = (rect.width - RENDER_PADDING_IN_CELLS)
-                    * BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL;
-                let canvas_pixel_height = (rect.height - RENDER_PADDING_IN_CELLS)
-                    * BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL;
-                let canvas_pixel_size =
-                    RenderSize::new(canvas_pixel_width as usize, canvas_pixel_height as usize);
+        let canvas = Canvas::default().paint(|ctx| {
+            let canvas_pixel_width =
+                (rect.width - RENDER_PADDING_IN_CELLS) * BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL;
+            let canvas_pixel_height =
+                (rect.height - RENDER_PADDING_IN_CELLS) * BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL;
+            let canvas_pixel_size =
+                RenderSize::new(canvas_pixel_width as usize, canvas_pixel_height as usize);
 
-                let render_pixel_size = {
-                    let render_pixel_length = min(canvas_pixel_width, canvas_pixel_height);
-                    RenderSize::new(render_pixel_length as usize, render_pixel_length as usize)
-                };
+            let render_pixel_size = {
+                let render_pixel_length = min(canvas_pixel_width, canvas_pixel_height);
+                RenderSize::new(render_pixel_length as usize, render_pixel_length as usize)
+            };
 
-                match &self.character_preview {
-                    Ok(character_preview) => match character_preview.render(render_pixel_size) {
-                        Ok(rendered_character) => {
-                            let glyph_size = rendered_character.glyph_size;
-                            let x_padding = (canvas_pixel_size.width - glyph_size.width) / 2;
-                            let y_padding = (canvas_pixel_size.height - glyph_size.height) / 2;
-                            ctx.draw(&CharacterPreviewShape {
-                                rendered_character: &rendered_character,
-                                x_padding,
-                                y_padding,
-                            })
-                        }
-                        Err(_) => {
-                            let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
-                            let y_padding =
-                                (canvas_pixel_size.height - render_pixel_size.height) / 2;
-                            ctx.draw(&ToufuShape {
-                                size: render_pixel_size,
-                                x_padding,
-                                y_padding,
-                            })
-                        }
-                    },
+            match &self.character_preview {
+                Ok(character_preview) => match character_preview.render(render_pixel_size) {
+                    Ok(rendered_character) => {
+                        let glyph_size = rendered_character.glyph_size;
+                        let x_padding = (canvas_pixel_size.width - glyph_size.width) / 2;
+                        let y_padding = (canvas_pixel_size.height - glyph_size.height) / 2;
+                        ctx.draw(&CharacterPreviewShape {
+                            rendered_character: &rendered_character,
+                            x_padding,
+                            y_padding,
+                        })
+                    }
                     Err(_) => {
                         let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
                         let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
@@ -114,8 +104,18 @@ impl CharacterPreviewCanvas {
                             y_padding,
                         })
                     }
-                };
-            });
+                },
+                Err(_) => {
+                    let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
+                    let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
+                    ctx.draw(&ToufuShape {
+                        size: render_pixel_size,
+                        x_padding,
+                        y_padding,
+                    })
+                }
+            };
+        });
 
         frame.render_widget(canvas, rect);
     }
@@ -167,6 +167,11 @@ impl CharacterPreviewCanvas {
                 frame.render_widget(help_text, chunks[1]);
             }
         }
+    }
+
+    fn draw_borders(&mut self, frame: &mut TerminalFrame, rect: Rect) {
+        let block = Block::default().title("Preview").borders(Borders::ALL);
+        frame.render_widget(block, rect);
     }
 }
 
