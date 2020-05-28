@@ -11,7 +11,7 @@ mod plane;
 
 pub use plane::Plane;
 
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Range {
     start: u32,
     end: u32,
