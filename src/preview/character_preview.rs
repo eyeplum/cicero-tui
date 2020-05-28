@@ -40,7 +40,7 @@ impl CharacterPreview {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
-        let paths_for_matching_fonts = StatefulVec::new(font_paths, 0);
+        let paths_for_matching_fonts = StatefulVec::new(font_paths, Some(0));
 
         let library = Library::init()?;
         let current_font =

@@ -5,24 +5,25 @@ pub struct StatefulVec<T> {
 }
 
 impl<T> StatefulVec<T> {
-    pub fn new(storage: Vec<T>, current: usize) -> Self {
-        if current + 1 > storage.len() {
-            StatefulVec {
-                storage,
-                current: None,
+    pub fn new(storage: Vec<T>, current: Option<usize>) -> Self {
+        let current = match current {
+            Some(current) => {
+                if current + 1 > storage.len() {
+                    None
+                } else {
+                    Some(current)
+                }
             }
-        } else {
-            StatefulVec {
-                storage,
-                current: Some(current),
-            }
-        }
+            None => None,
+        };
+
+        StatefulVec { storage, current }
     }
 
     pub fn has_previous(&self) -> bool {
         match self.current {
             Some(current) => current > 0,
-            None => self.storage.is_empty(),
+            None => !self.storage.is_empty(),
         }
     }
 
@@ -41,7 +42,7 @@ impl<T> StatefulVec<T> {
     pub fn has_next(&self) -> bool {
         match self.current {
             Some(current) => current + 1 < self.storage.len(),
-            None => self.storage.is_empty(),
+            None => !self.storage.is_empty(),
         }
     }
 
@@ -67,5 +68,164 @@ impl<T> StatefulVec<T> {
 
 #[cfg(test)]
 mod tests {
-    // TODO: Unit tests
+    use super::*;
+
+    #[test]
+    fn test_create() {
+        {
+            let stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            assert!(stateful_vec.storage.is_empty());
+            assert!(stateful_vec.current.is_none());
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(2));
+            assert_eq!(stateful_vec.storage, vec![1, 2, 3, 4, 5]);
+            assert_eq!(stateful_vec.current, Some(2));
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(100));
+            assert_eq!(stateful_vec.storage, vec![1, 2, 3, 4, 5]);
+            assert_eq!(stateful_vec.current, None);
+        }
+    }
+
+    #[test]
+    fn test_has_previous() {
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(1));
+            assert!(stateful_vec.has_previous());
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(0));
+            assert!(!stateful_vec.has_previous());
+        }
+        {
+            let stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            assert!(!stateful_vec.has_previous());
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            assert!(stateful_vec.has_previous());
+        }
+    }
+
+    #[test]
+    fn test_previous() {
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(1));
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current, Some(0));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(0));
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current, Some(0));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current, None);
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current, Some(4));
+        }
+    }
+
+    #[test]
+    fn test_has_next() {
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(1));
+            assert!(stateful_vec.has_next());
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(4));
+            assert!(!stateful_vec.has_next());
+        }
+        {
+            let stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            assert!(!stateful_vec.has_next());
+        }
+        {
+            let stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            assert!(stateful_vec.has_next());
+        }
+    }
+
+    #[test]
+    fn test_next() {
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(1));
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current, Some(2));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(4));
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current, Some(4));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current, None);
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current, Some(0));
+        }
+    }
+
+    #[test]
+    fn test_current_item() {
+        {
+            let stateful_vec = StatefulVec::new(Vec::<u8>::default(), None);
+            assert_eq!(stateful_vec.current_item(), None);
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            assert_eq!(stateful_vec.current_item(), None);
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&5));
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&4));
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&3));
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&2));
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&1));
+
+            stateful_vec.select_previous();
+            assert_eq!(stateful_vec.current_item(), Some(&1));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            assert_eq!(stateful_vec.current_item(), None);
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&1));
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&2));
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&3));
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&4));
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&5));
+
+            stateful_vec.select_next();
+            assert_eq!(stateful_vec.current_item(), Some(&5));
+        }
+    }
 }
