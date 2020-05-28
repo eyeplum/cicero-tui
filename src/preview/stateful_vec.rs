@@ -1,9 +1,7 @@
-const STATEFUL_VEC_CURRENT_INVALID: usize = usize::max_value();
-
 #[derive(Debug)]
 pub struct StatefulVec<T> {
     storage: Vec<T>,
-    current: usize,
+    current: Option<usize>,
 }
 
 impl<T> StatefulVec<T> {
@@ -11,42 +9,63 @@ impl<T> StatefulVec<T> {
         if current + 1 > storage.len() {
             StatefulVec {
                 storage,
-                current: STATEFUL_VEC_CURRENT_INVALID,
+                current: None,
             }
         } else {
-            StatefulVec { storage, current }
+            StatefulVec {
+                storage,
+                current: Some(current),
+            }
         }
     }
 
     pub fn has_previous(&self) -> bool {
-        !self.storage.is_empty() && self.current != STATEFUL_VEC_CURRENT_INVALID && self.current > 0
+        match self.current {
+            Some(current) => current > 0,
+            None => self.storage.is_empty(),
+        }
     }
 
     pub fn select_previous(&mut self) {
         if !self.has_previous() {
             return;
         }
+        assert!(!self.storage.is_empty());
 
-        self.current -= 1;
+        self.current = match self.current {
+            Some(current) => Some(current - 1),
+            None => Some(self.storage.len() - 1),
+        }
     }
 
     pub fn has_next(&self) -> bool {
-        !self.storage.is_empty()
-            && self.current != STATEFUL_VEC_CURRENT_INVALID
-            && (self.current + 1 < self.storage.len())
+        match self.current {
+            Some(current) => current + 1 < self.storage.len(),
+            None => self.storage.is_empty(),
+        }
     }
 
     pub fn select_next(&mut self) {
         if !self.has_next() {
             return;
         }
+        assert!(!self.storage.is_empty());
 
-        self.current += 1;
+        self.current = match self.current {
+            Some(current) => Some(current + 1),
+            None => Some(0),
+        }
     }
 
-    pub fn current_item(&self) -> &T {
-        &self.storage[self.current]
+    pub fn current_item(&self) -> Option<&T> {
+        match self.current {
+            Some(current) => Some(&self.storage[current]),
+            None => None,
+        }
     }
 }
 
-// TODO: Unit tests
+#[cfg(test)]
+mod tests {
+    // TODO: Unit tests
+}
