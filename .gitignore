@@ -39,3 +39,6 @@ tags
 
 ### JetBrains IDE ####
 .idea
+
+### VSCode ###
+.vscode

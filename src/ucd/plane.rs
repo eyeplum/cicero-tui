@@ -222,8 +222,8 @@ mod tests {
             Plane {
                 name: PLANE_NAMES[16],
                 range: Range {
-                    start: 0x100000,
-                    end: 0x10FFFF
+                    start: 0x0010_0000,
+                    end: 0x0010_FFFF
                 }
             }
         );
