@@ -71,10 +71,10 @@ fn main() -> Result<()> {
                 .value_name("TYPE")
                 .help(
                     "Specify input type, if not provided a best guess is performed on the input\n\
-                     Valid values: codepoints, string",
+                     Valid values: code-points, string",
                 ),
         )
-        .arg(Arg::with_name("INPUT").help("a string or comma separated codepoints"))
+        .arg(Arg::with_name("INPUT").help("a string or comma separated code points"))
         .get_matches();
 
     if args.is_present("tui_mode") {
