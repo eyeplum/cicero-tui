@@ -20,6 +20,7 @@ extern crate scopeguard;
 use clap::{App, Arg, ArgMatches};
 use crossterm::Result;
 
+mod cli;
 mod preview;
 mod tui;
 mod ucd;
@@ -37,8 +38,7 @@ fn run_tui() -> Result<()> {
 }
 
 fn run_cli(args: ArgMatches) -> Result<()> {
-    println!("!!ERROR!! Cicero CLI is not implemented yet");
-    println!("{}", args.usage());
+    println!("{}", cli::generate_output(args));
     Ok(())
 }
 
@@ -46,37 +46,40 @@ fn main() -> Result<()> {
     let args = App::new("Cicero: A Unicode Tool")
         .version("0.1.0")
         .arg(
-            Arg::with_name("tui_mode")
+            Arg::with_name(cli::FLAG_NAME_TUI_MODE)
                 .short("t")
                 .long("tui")
                 .help("Show Terminal UI"),
         )
         .arg(
-            Arg::with_name("output_format")
+            Arg::with_name(cli::OPTION_NAME_OUTPUT_FORMAT)
                 .short("o")
                 .long("output-format")
                 .takes_value(true)
-                .value_name("FORMAT")
+                .value_name(cli::OPTION_VALUE_OUTPUT_FORMAT)
                 .help(
                     "Specify output format, text if not provided\n\
                      Valid values: text, json",
                 ),
         )
         .arg(
-            Arg::with_name("input_type")
+            Arg::with_name(cli::OPTION_NAME_INPUT_TYPE)
                 .short("i")
                 .long("input-type")
                 .takes_value(true)
-                .value_name("TYPE")
+                .value_name(cli::OPTION_VALUE_INPUT_TYPE)
                 .help(
                     "Specify input type, if not provided a best guess is performed on the input\n\
                      Valid values: code-points, string",
                 ),
         )
-        .arg(Arg::with_name("INPUT").help("a string or comma separated code points"))
+        .arg(
+            Arg::with_name(cli::ARGUMENT_VALUE_INPUT)
+                .help("a string or comma separated code points"),
+        )
         .get_matches();
 
-    if args.is_present("tui_mode") {
+    if args.is_present(cli::FLAG_NAME_TUI_MODE) {
         run_tui()
     } else {
         run_cli(args)
