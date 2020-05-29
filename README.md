@@ -4,30 +4,31 @@ A Unicode Tool with Terminal UI
 
 [![](https://github.com/eyeplum/cicero-tui/workflows/CI/badge.svg)](https://github.com/eyeplum/cicero-tui/actions)
 
-## Build
+## Build Requirements
 
-### Requirements
+### Rust
 
-#### Rust
+Make sure a Rust toolchain is installed. See [rustup](https://rustup.rs/).
 
-Make sure a Rust toolchain is installed.
-
-#### fontconfig and freetype
+### fontconfig and freetype
 
 This tool requires `fontconfig` and `freetype` libraries to build.
 
-##### GNU/Linux (Tested on Ubuntu 18.04 LTS)
+- On GNU/Linux (Tested on Ubuntu 18.04 LTS)
 
-```sh
-# (Optional) You may need to install a C/C++ compiler and CMake if they are not installed already
-$ sudo apt install build-essential cmake
+    ```sh
+    # Assuming a C/C++ compiler and CMake are installed
+    # This installs shared libraries for both fontconfig and freetype
+    $ sudo apt install libfontconfig1-dev
+    ```
 
-# This installs shared libraries for both fontconfig and freetype
-$ sudo apt install libfontconfig1-dev
-```
+- On macOS
 
-##### macOS
+    ```sh
+    # Assuming homebrew is installed
+    # This installs shared libraries for both fontconfig and freetype
+    $ brew install fontconfig
+    ```
 
-```sh
-$ brew install fontconfig
-```
+## License
+[![](images/gplv3.png)](https://www.gnu.org/licenses/gpl-3.0.html)
