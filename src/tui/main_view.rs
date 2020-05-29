@@ -153,26 +153,30 @@ impl MainView {
             KeyCode::Up => {
                 self.graphemes.select_previous();
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail();
+                    self.update_showing_detail(&app_state);
                 }
             }
             KeyCode::Down => {
                 self.graphemes.select_next();
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail();
+                    self.update_showing_detail(&app_state);
                 }
             }
             KeyCode::Left => {
                 if let Some(character_detail_view) = &mut self.character_detail_view {
                     character_detail_view.previous_preview_font();
+                    app_state.preferred_font_path =
+                        character_detail_view.get_current_preview_font_path()
                 }
             }
             KeyCode::Right => {
                 if let Some(character_detail_view) = &mut self.character_detail_view {
                     character_detail_view.next_preview_font();
+                    app_state.preferred_font_path =
+                        character_detail_view.get_current_preview_font_path()
                 }
             }
-            KeyCode::Enter => self.update_showing_detail(),
+            KeyCode::Enter => self.update_showing_detail(&app_state),
             KeyCode::Char(c) => {
                 self.user_input.push(c);
                 self.graphemes = StatefulGraphemes::new(&self.user_input);
@@ -185,10 +189,13 @@ impl MainView {
         };
     }
 
-    fn update_showing_detail(&mut self) {
+    fn update_showing_detail(&mut self, app_state: &ApplicationState) {
         if let Some(selected_row_index) = self.graphemes.state.selected() {
             if let Some(chr) = self.graphemes.rows[selected_row_index].code_point {
-                self.character_detail_view = Some(CharacterDetailView::new(chr));
+                self.character_detail_view = Some(CharacterDetailView::new(
+                    chr,
+                    app_state.preferred_font_path.as_ref(),
+                ));
             }
         }
     }

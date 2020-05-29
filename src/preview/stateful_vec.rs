@@ -18,7 +18,7 @@ pub struct StatefulVec<T> {
     current: Option<usize>,
 }
 
-impl<T> StatefulVec<T> {
+impl<T: Eq> StatefulVec<T> {
     pub fn new(storage: Vec<T>, current: Option<usize>) -> Self {
         let current = match current {
             Some(current) => {
@@ -69,6 +69,16 @@ impl<T> StatefulVec<T> {
         self.current = match self.current {
             Some(current) => Some(current + 1),
             None => Some(0),
+        }
+    }
+
+    pub fn select_if_found(&mut self, item: &T) {
+        if let Some(index) = self
+            .storage
+            .iter()
+            .position(|stored_item| stored_item == item)
+        {
+            self.current = Some(index);
         }
     }
 
@@ -188,6 +198,28 @@ mod tests {
             let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
             stateful_vec.select_next();
             assert_eq!(stateful_vec.current, Some(0));
+        }
+    }
+
+    #[test]
+    fn test_select_if_found() {
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            stateful_vec.select_if_found(&4);
+            assert_eq!(stateful_vec.current, Some(3));
+            assert_eq!(stateful_vec.current_item(), Some(&4));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], Some(2));
+            stateful_vec.select_if_found(&100);
+            assert_eq!(stateful_vec.current, Some(2));
+            assert_eq!(stateful_vec.current_item(), Some(&3));
+        }
+        {
+            let mut stateful_vec = StatefulVec::new(vec![1, 2, 3, 4, 5], None);
+            stateful_vec.select_if_found(&100);
+            assert_eq!(stateful_vec.current, None);
+            assert_eq!(stateful_vec.current_item(), None);
         }
     }
 

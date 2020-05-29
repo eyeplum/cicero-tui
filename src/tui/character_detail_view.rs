@@ -29,10 +29,10 @@ pub struct CharacterDetailView {
 }
 
 impl CharacterDetailView {
-    pub fn new(chr: char) -> Self {
+    pub fn new(chr: char, preferred_preview_font_path: Option<&String>) -> Self {
         CharacterDetailView {
             chr,
-            character_preview_canvas: CharacterPreviewCanvas::new(chr),
+            character_preview_canvas: CharacterPreviewCanvas::new(chr, preferred_preview_font_path),
         }
     }
 
@@ -44,6 +44,10 @@ impl CharacterDetailView {
 
         self.character_preview_canvas.draw(frame, chunks[0]);
         self.draw_character_properties(frame, chunks[1]);
+    }
+
+    pub fn get_current_preview_font_path(&self) -> Option<String> {
+        self.character_preview_canvas.get_current_preview_font()
     }
 
     pub fn previous_preview_font(&mut self) {

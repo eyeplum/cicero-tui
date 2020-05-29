@@ -32,9 +32,9 @@ pub struct CharacterPreviewCanvas {
 }
 
 impl CharacterPreviewCanvas {
-    pub fn new(chr: char) -> Self {
+    pub fn new(chr: char, preferred_font_path: Option<&String>) -> Self {
         CharacterPreviewCanvas {
-            character_preview: CharacterPreview::new(chr),
+            character_preview: CharacterPreview::new(chr, preferred_font_path),
         }
     }
 
@@ -55,6 +55,13 @@ impl CharacterPreviewCanvas {
         self.draw_character_preview(frame, chunks[0]);
         self.draw_font_selection(frame, chunks[1]);
         self.draw_borders(frame, rect);
+    }
+
+    pub fn get_current_preview_font(&self) -> Option<String> {
+        match &self.character_preview {
+            Ok(character_preview) => character_preview.get_current_font_path(),
+            Err(_) => None,
+        }
     }
 
     pub fn previous_preview_font(&mut self) {

@@ -48,13 +48,16 @@ pub struct CharacterPreview {
 }
 
 impl CharacterPreview {
-    pub fn new(chr: char) -> Result<CharacterPreview> {
+    pub fn new(chr: char, preferred_font_path: Option<&String>) -> Result<CharacterPreview> {
         let font_paths = fonts_for(chr)?;
         if font_paths.is_empty() {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
-        let paths_for_matching_fonts = StatefulVec::new(font_paths, Some(0));
+        let mut paths_for_matching_fonts = StatefulVec::new(font_paths, Some(0));
+        if let Some(font_path) = preferred_font_path {
+            paths_for_matching_fonts.select_if_found(font_path);
+        }
 
         let library = Library::init()?;
         let current_font =
@@ -66,6 +69,13 @@ impl CharacterPreview {
             library,
             current_font,
         })
+    }
+
+    pub fn get_current_font_path(&self) -> Option<String> {
+        match self.paths_for_matching_fonts.current_item() {
+            Some(current_font_path) => Some(current_font_path.to_owned()),
+            None => None,
+        }
     }
 
     pub fn has_previous_font(&self) -> bool {

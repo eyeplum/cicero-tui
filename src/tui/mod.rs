@@ -25,13 +25,18 @@ mod stateful_graphemes;
 pub use main_view::MainView;
 pub use renderer::Renderer;
 
+#[derive(Debug)]
 pub struct ApplicationState {
     pub keep_running: bool,
+    pub preferred_font_path: Option<String>,
 }
 
 impl Default for ApplicationState {
     fn default() -> Self {
-        ApplicationState { keep_running: true }
+        ApplicationState {
+            keep_running: true,
+            preferred_font_path: None,
+        }
     }
 }
 
