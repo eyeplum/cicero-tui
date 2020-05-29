@@ -29,7 +29,7 @@ impl Renderer {
 
     pub fn run<F>(&self, mut f: F) -> Result<()>
     where
-        F: FnMut(&mut ApplicationTerminal, &mut bool) -> Result<()>,
+        F: FnMut(&mut ApplicationTerminal) -> Result<bool>,
     {
         enable_raw_mode()?;
 
@@ -43,7 +43,7 @@ impl Renderer {
 
         let mut keep_running = true;
         while keep_running {
-            f(&mut terminal, &mut keep_running)?;
+            keep_running = f(&mut terminal)?;
         }
 
         terminal.clear()?;

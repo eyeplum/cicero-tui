@@ -30,10 +30,9 @@ fn run_tui() -> Result<()> {
     let renderer = tui::Renderer::new();
     let mut main_view = tui::MainView::new();
 
-    renderer.run(|terminal, keep_running| {
+    renderer.run(|terminal| {
         main_view.update(terminal, &mut state)?;
-        *keep_running = state.keep_running;
-        Ok(())
+        Ok(state.keep_running)
     })
 }
 
