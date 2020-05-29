@@ -1,6 +1,6 @@
 # cicero-tui
 
-A Unicode Tool with Terminal UI
+A Unicode Tool with terminal terminal user interface.
 
 [![](https://github.com/eyeplum/cicero-tui/workflows/CI/badge.svg)](https://github.com/eyeplum/cicero-tui/actions)
 
@@ -26,8 +26,7 @@ This tool requires `fontconfig` and `freetype` libraries to build.
 
     ```sh
     # Assuming homebrew is installed
-    # This installs shared libraries for both fontconfig and freetype
-    $ brew install fontconfig
+    $ brew install pkg-config fontconfig
     ```
 
 ## License
