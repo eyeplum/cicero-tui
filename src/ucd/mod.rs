@@ -21,8 +21,10 @@
 //! Cicero is a Unicode tool after all, so sometimes it needs to work with all aspects of Unicode.
 //!
 
+mod character_properties;
 mod plane;
 
+pub use character_properties::{CharacterProperties, GraphemeProperties};
 pub use plane::Plane;
 
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]

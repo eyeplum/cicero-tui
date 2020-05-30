@@ -18,12 +18,13 @@
 extern crate scopeguard;
 
 use clap::{App, Arg, ArgMatches};
-use crossterm::Result;
 
 mod cli;
 mod preview;
 mod tui;
 mod ucd;
+
+use cli::Result;
 
 fn run_tui() -> Result<()> {
     let mut state = tui::ApplicationState::default();
@@ -31,14 +32,17 @@ fn run_tui() -> Result<()> {
     let renderer = tui::Renderer::new();
     let mut main_view = tui::MainView::new();
 
-    renderer.run(|terminal| {
+    match renderer.run(|terminal| {
         main_view.update(terminal, &mut state)?;
         Ok(state.keep_running)
-    })
+    }) {
+        Ok(()) => Ok(()),
+        Err(error) => Err(Box::new(error)),
+    }
 }
 
 fn run_cli(args: ArgMatches) -> Result<()> {
-    println!("{}", cli::generate_output(args));
+    println!("{}", cli::generate_output(args)?);
     Ok(())
 }
 
@@ -56,10 +60,10 @@ fn main() -> Result<()> {
                 .short("o")
                 .long("output-format")
                 .takes_value(true)
-                .value_name(cli::OPTION_VALUE_OUTPUT_FORMAT)
+                .value_name(cli::OPTION_VALUE_NAME_OUTPUT_FORMAT)
                 .help(
                     "Specify output format, text if not provided\n\
-                     Valid values: text, json",
+                     Valid values: text, json, tree",
                 ),
         )
         .arg(
@@ -67,19 +71,20 @@ fn main() -> Result<()> {
                 .short("i")
                 .long("input-type")
                 .takes_value(true)
-                .value_name(cli::OPTION_VALUE_INPUT_TYPE)
+                .value_name(cli::OPTION_VALUE_NAME_INPUT_TYPE)
                 .help(
                     "Specify input type, if not provided a best guess is performed on the input\n\
-                     Valid values: code-points, string",
+                     Valid values: string, code_points",
                 ),
         )
         .arg(
-            Arg::with_name(cli::ARGUMENT_VALUE_INPUT)
+            Arg::with_name(cli::ARGUMENT_VALUE_NAME_INPUT)
                 .help("a string or comma separated code points"),
         )
         .get_matches();
 
     if args.is_present(cli::FLAG_NAME_TUI_MODE) {
+        // TODO: Pass input to the tui
         run_tui()
     } else {
         run_cli(args)
