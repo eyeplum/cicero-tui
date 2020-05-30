@@ -73,3 +73,5 @@ pub fn parse_input(args: &ArgMatches) -> Option<Input> {
         None => Some(Input::String(input_string.to_owned())),
     }
 }
+
+// TODO: Unit tests
