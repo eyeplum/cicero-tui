@@ -12,33 +12,22 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-//!
-//! This module implements the command line interface of Cicero.
-//!
+use clap::ArgMatches;
 
-use std::error;
-use std::fmt;
+use super::{parse_input, Result};
+use crate::ucd::GraphemeProperties;
 
-mod input;
-mod output;
+pub const OPTION_NAME_OUTPUT_FORMAT: &str = "output_format";
 
-pub use input::{
-    parse_input, ARGUMENT_VALUE_NAME_INPUT, OPTION_NAME_INPUT_TYPE,
-    OPTION_VALUE_INPUT_TYPE_CODE_POINTS, OPTION_VALUE_INPUT_TYPE_STRING,
-};
-pub use output::{generate_output, OPTION_NAME_OUTPUT_FORMAT};
-
-pub const FLAG_NAME_TUI_MODE: &str = "tui_mode";
-
-pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
-
-#[derive(Debug)]
-pub enum Error {}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Cicero Error")
+pub fn generate_output(args: ArgMatches) -> Result<String> {
+    match parse_input(&args) {
+        Some(input) => {
+            // TODO: Support text output format
+            // TODO: Support tree output format
+            Ok(serde_json::to_string_pretty(
+                &GraphemeProperties::from_string(&input.to_string()),
+            )?)
+        }
+        None => Ok(args.usage().to_owned()),
     }
 }
-
-impl error::Error for Error {}

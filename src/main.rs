@@ -60,10 +60,10 @@ fn main() -> Result<()> {
                 .short("o")
                 .long("output-format")
                 .takes_value(true)
-                .value_name(cli::OPTION_VALUE_NAME_OUTPUT_FORMAT)
+                .value_name("FORMAT")
                 .help(
-                    "Specify output format, text if not provided\n\
-                     Valid values: text, json, tree",
+                    "Specify output format, 'text' by default\n\
+                     valid values: text, json, tree",
                 ),
         )
         .arg(
@@ -71,11 +71,14 @@ fn main() -> Result<()> {
                 .short("i")
                 .long("input-type")
                 .takes_value(true)
-                .value_name(cli::OPTION_VALUE_NAME_INPUT_TYPE)
-                .help(
-                    "Specify input type, if not provided a best guess is performed on the input\n\
-                     Valid values: string, code_points",
-                ),
+                .value_name("TYPE")
+                .help(&format!(
+                    "Specify input type, '{}' by default\n\
+                     valid values: {}, {}",
+                    cli::OPTION_VALUE_INPUT_TYPE_STRING,
+                    cli::OPTION_VALUE_INPUT_TYPE_STRING,
+                    cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
+                )),
         )
         .arg(
             Arg::with_name(cli::ARGUMENT_VALUE_NAME_INPUT)
