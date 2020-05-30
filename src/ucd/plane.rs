@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::ucd::Range;
+use super::Range;
 
 const PLANE_COUNT: u32 = 17;
 const PLANE_SIZE: u32 = 0x1_0000;

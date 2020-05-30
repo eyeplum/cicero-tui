@@ -16,9 +16,9 @@ use std::cmp::min;
 
 use freetype::{Face, Library};
 
-use crate::preview::font_match::fonts_for;
-use crate::preview::stateful_vec::StatefulVec;
-use crate::preview::{Error, Result};
+use super::font_match::fonts_for;
+use super::stateful_vec::StatefulVec;
+use super::{Error, Result};
 
 #[derive(Debug, Copy, Clone)]
 pub struct RenderSize {

@@ -19,7 +19,7 @@ use std::slice;
 
 use fontconfig::fontconfig as fc;
 
-use crate::preview::{Error, Result};
+use super::{Error, Result};
 
 pub fn fonts_for(chr: char) -> Result<Vec<String>> {
     unsafe {

@@ -17,7 +17,7 @@ use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
 use unic::ucd::{Age, Block, GeneralCategory, Name};
 
-use crate::ucd::Plane;
+use super::Plane;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GraphemeProperties {

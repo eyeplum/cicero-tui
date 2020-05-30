@@ -19,8 +19,8 @@ use tui::style::{Color, Style};
 use tui::widgets::canvas::{Canvas, Painter, Shape};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 
+use super::main_view::TerminalFrame;
 use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter, Result};
-use crate::tui::main_view::TerminalFrame;
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
 const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;

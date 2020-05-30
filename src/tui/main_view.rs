@@ -23,10 +23,10 @@ use tui::widgets::{Block, Borders, List, Paragraph, Text};
 use tui::Frame;
 use unic::ucd::UNICODE_VERSION;
 
-use crate::tui::character_detail_view::CharacterDetailView;
-use crate::tui::renderer::ApplicationTerminal;
-use crate::tui::stateful_graphemes::StatefulGraphemes;
-use crate::tui::ApplicationState;
+use super::character_detail_view::CharacterDetailView;
+use super::renderer::ApplicationTerminal;
+use super::stateful_graphemes::StatefulGraphemes;
+use super::ApplicationState;
 
 pub type TerminalFrame<'a> = Frame<'a, CrosstermBackend<Stdout>>;
 
