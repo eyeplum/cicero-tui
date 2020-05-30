@@ -26,12 +26,11 @@ mod ucd;
 
 use cli::Result;
 
-fn run_tui() -> Result<()> {
+fn run_tui(user_input: String) -> Result<()> {
     let mut state = tui::ApplicationState::default();
+    let mut main_view = tui::MainView::new(user_input);
 
     let renderer = tui::Renderer::new();
-    let mut main_view = tui::MainView::new();
-
     match renderer.run(|terminal| {
         main_view.update(terminal, &mut state)?;
         Ok(state.keep_running)
@@ -87,8 +86,11 @@ fn main() -> Result<()> {
         .get_matches();
 
     if args.is_present(cli::FLAG_NAME_TUI_MODE) {
-        // TODO: Pass input to the tui
-        run_tui()
+        let user_input = match cli::parse_input(&args) {
+            Some(input) => input.to_string(),
+            None => "".to_owned(),
+        };
+        run_tui(user_input)
     } else {
         run_cli(args)
     }

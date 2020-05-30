@@ -37,10 +37,11 @@ pub struct MainView {
 }
 
 impl MainView {
-    pub fn new() -> Self {
+    pub fn new(user_input: String) -> Self {
+        let graphemes = StatefulGraphemes::new(&user_input);
         MainView {
-            user_input: String::default(),
-            graphemes: StatefulGraphemes::default(),
+            user_input,
+            graphemes,
             character_detail_view: None,
         }
     }
