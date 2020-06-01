@@ -17,7 +17,8 @@
 #[macro_use(defer)]
 extern crate scopeguard;
 
-use clap::{App, Arg, ArgMatches};
+use clap::{crate_version, App, Arg, ArgMatches};
+use unic::ucd::version::UNICODE_VERSION;
 
 mod cli;
 mod preview;
@@ -47,7 +48,11 @@ fn run_cli(args: ArgMatches) -> Result<()> {
 
 fn main() -> Result<()> {
     let args = App::new("Cicero: A Unicode Tool")
-        .version("0.1.0")
+        .version(&*format!(
+            "{} (Unicode Version {})",
+            crate_version!(),
+            UNICODE_VERSION
+        ))
         .arg(
             Arg::with_name(cli::FLAG_NAME_TUI_MODE)
                 .short("t")
