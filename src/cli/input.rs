@@ -16,7 +16,7 @@ use std::char;
 
 use clap::ArgMatches;
 
-use super::{Error, Result};
+use super::{Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE};
 
 pub const OPTION_NAME_INPUT_TYPE: &str = "input_type";
 pub const OPTION_VALUE_INPUT_TYPE_STRING: &str = "string";
@@ -78,7 +78,15 @@ pub fn parse_input(args: &ArgMatches) -> Result<Input> {
                 input_type.to_owned(),
             ))),
         },
-        None => Ok(Input::String(input_string.to_owned())),
+        None => {
+            if args.is_present(FLAG_NAME_CODE_POINT_INPUT_MODE) {
+                Ok(Input::Characters(characters_from_input_string(
+                    input_string,
+                )))
+            } else {
+                Ok(Input::String(input_string.to_owned()))
+            }
+        }
     }
 }
 

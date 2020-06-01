@@ -32,6 +32,7 @@ pub use output::{
 };
 
 pub const FLAG_NAME_TUI_MODE: &str = "tui_mode";
+pub const FLAG_NAME_CODE_POINT_INPUT_MODE: &str = "code_point_input_mode";
 
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 

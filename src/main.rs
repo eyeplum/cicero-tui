@@ -55,13 +55,24 @@ fn main() -> Result<()> {
                 .help("Show Terminal UI"),
         )
         .arg(
+            Arg::with_name(cli::FLAG_NAME_CODE_POINT_INPUT_MODE)
+                .short("u")
+                .help(&format!(
+                    "Parse {} as comma seperated code points,\n\
+                     same as '--input-type={}',\n\
+                     ignored if '--input-type' is specified",
+                    cli::ARGUMENT_VALUE_NAME_INPUT,
+                    cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
+                )),
+        )
+        .arg(
             Arg::with_name(cli::OPTION_NAME_OUTPUT_FORMAT)
                 .short("o")
                 .long("output-format")
                 .takes_value(true)
                 .value_name("FORMAT")
                 .help(&format!(
-                    "Specify output format, '{}' by default\n\
+                    "Specify output format, '{}' by default,\n\
                      valid values: {}, {}",
                     cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
                     cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
@@ -75,7 +86,7 @@ fn main() -> Result<()> {
                 .takes_value(true)
                 .value_name("TYPE")
                 .help(&format!(
-                    "Specify input type, '{}' by default\n\
+                    "Specify input type, '{}' by default,\n\
                      valid values: {}, {}",
                     cli::OPTION_VALUE_INPUT_TYPE_STRING,
                     cli::OPTION_VALUE_INPUT_TYPE_STRING,
