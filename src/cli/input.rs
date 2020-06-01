@@ -16,6 +16,8 @@ use std::char;
 
 use clap::ArgMatches;
 
+use super::{Error, Result};
+
 pub const OPTION_NAME_INPUT_TYPE: &str = "input_type";
 pub const OPTION_VALUE_INPUT_TYPE_STRING: &str = "string";
 pub const OPTION_VALUE_INPUT_TYPE_CODE_POINTS: &str = "code-points";
@@ -61,16 +63,22 @@ impl ToString for Input {
     }
 }
 
-pub fn parse_input(args: &ArgMatches) -> Option<Input> {
-    let input_string = args.value_of(ARGUMENT_VALUE_NAME_INPUT)?;
+pub fn parse_input(args: &ArgMatches) -> Result<Input> {
+    let input_string = args
+        .value_of(ARGUMENT_VALUE_NAME_INPUT)
+        .unwrap_or_else(|| ""); // No input is provided, fallback to an empty string
+
     match args.value_of(OPTION_NAME_INPUT_TYPE) {
         Some(input_type) => match input_type {
-            OPTION_VALUE_INPUT_TYPE_CODE_POINTS => Some(Input::Characters(
+            OPTION_VALUE_INPUT_TYPE_STRING => Ok(Input::String(input_string.to_owned())),
+            OPTION_VALUE_INPUT_TYPE_CODE_POINTS => Ok(Input::Characters(
                 characters_from_input_string(input_string),
             )),
-            _ => Some(Input::String(input_string.to_owned())),
+            _ => Err(Box::new(Error::UnrecognizedInputType(
+                input_type.to_owned(),
+            ))),
         },
-        None => Some(Input::String(input_string.to_owned())),
+        None => Ok(Input::String(input_string.to_owned())),
     }
 }
 

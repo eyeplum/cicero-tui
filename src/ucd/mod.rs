@@ -32,3 +32,7 @@ pub struct Range {
     start: u32,
     end: u32,
 }
+
+pub fn code_point_description(chr: char) -> String {
+    format!("U+{:04X}", chr as u32)
+}

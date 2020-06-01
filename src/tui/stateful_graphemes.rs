@@ -19,7 +19,7 @@ use tui::widgets::ListState;
 use unic::segment::Graphemes;
 use unic::ucd::name::Name;
 
-use super::code_point_description;
+use crate::ucd::code_point_description;
 
 #[derive(Default)]
 pub struct GraphemeRow {

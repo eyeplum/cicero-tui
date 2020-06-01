@@ -17,7 +17,12 @@ use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
 use unic::ucd::{Age, Block, GeneralCategory, Name};
 
-use super::Plane;
+use std::fmt;
+
+use super::{code_point_description, Plane};
+
+const TREE_GRAPH_EDGE: &str = "├── ";
+const TREE_GRAPH_CORNER: &str = "└── ";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GraphemeProperties {
@@ -33,6 +38,21 @@ impl GraphemeProperties {
                 characters: grapheme.chars().map(CharacterProperties::new).collect(),
             })
             .collect()
+    }
+}
+
+impl fmt::Display for GraphemeProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", self.grapheme)?;
+        for (index, character) in self.characters.iter().enumerate() {
+            let tree_graph = if index + 1 == self.characters.len() {
+                TREE_GRAPH_CORNER
+            } else {
+                TREE_GRAPH_EDGE
+            };
+            write!(f, "{}{}", tree_graph, character)?;
+        }
+        Ok(())
     }
 }
 
@@ -78,5 +98,18 @@ impl CharacterProperties {
             plane_name,
             block_name,
         }
+    }
+}
+
+impl fmt::Display for CharacterProperties {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(
+            f,
+            "{} {} {}",
+            code_point_description(self.character),
+            self.character,
+            self.name,
+        )?;
+        Ok(())
     }
 }

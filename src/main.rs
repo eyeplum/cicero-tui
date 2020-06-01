@@ -60,10 +60,13 @@ fn main() -> Result<()> {
                 .long("output-format")
                 .takes_value(true)
                 .value_name("FORMAT")
-                .help(
-                    "Specify output format, 'text' by default\n\
-                     valid values: text, json, tree",
-                ),
+                .help(&format!(
+                    "Specify output format, '{}' by default\n\
+                     valid values: {}, {}",
+                    cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
+                    cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
+                    cli::OPTION_VALUE_OUTPUT_FORMAT_JSON,
+                )),
         )
         .arg(
             Arg::with_name(cli::OPTION_NAME_INPUT_TYPE)
@@ -86,11 +89,8 @@ fn main() -> Result<()> {
         .get_matches();
 
     if args.is_present(cli::FLAG_NAME_TUI_MODE) {
-        let user_input = match cli::parse_input(&args) {
-            Some(input) => input.to_string(),
-            None => "".to_owned(),
-        };
-        run_tui(user_input)
+        let user_input = cli::parse_input(&args)?;
+        run_tui(user_input.to_string())
     } else {
         run_cli(args)
     }

@@ -26,18 +26,31 @@ pub use input::{
     parse_input, ARGUMENT_VALUE_NAME_INPUT, OPTION_NAME_INPUT_TYPE,
     OPTION_VALUE_INPUT_TYPE_CODE_POINTS, OPTION_VALUE_INPUT_TYPE_STRING,
 };
-pub use output::{generate_output, OPTION_NAME_OUTPUT_FORMAT};
+pub use output::{
+    generate_output, OPTION_NAME_OUTPUT_FORMAT, OPTION_VALUE_OUTPUT_FORMAT_JSON,
+    OPTION_VALUE_OUTPUT_FORMAT_TEXT,
+};
 
 pub const FLAG_NAME_TUI_MODE: &str = "tui_mode";
 
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 #[derive(Debug)]
-pub enum Error {}
+pub enum Error {
+    UnrecognizedInputType(String),
+    UnrecognizedOutputFormat(String),
+}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Cicero Error")
+        match self {
+            Error::UnrecognizedInputType(input_type) => {
+                write!(f, "Unrecognized input type: '{}'", input_type)
+            }
+            Error::UnrecognizedOutputFormat(output_format) => {
+                write!(f, "Unrecognized output format: '{}'", output_format)
+            }
+        }
     }
 }
 

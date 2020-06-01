@@ -19,9 +19,8 @@ use unic::char::property::EnumeratedCharProperty;
 use unic::ucd::{Age, GeneralCategory, Name};
 
 use super::character_preview_canvas::CharacterPreviewCanvas;
-use super::code_point_description;
 use super::main_view::TerminalFrame;
-use crate::ucd::Plane;
+use crate::ucd::{code_point_description, Plane};
 
 pub struct CharacterDetailView {
     pub chr: char,
