@@ -105,7 +105,7 @@ impl fmt::Display for CharacterProperties {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "{} {} {}",
+            "{}  {}  {}",
             code_point_description(self.character),
             self.character,
             self.name,
