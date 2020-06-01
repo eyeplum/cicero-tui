@@ -12,19 +12,31 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use tui::style::{Modifier, Style};
-use tui::widgets::{Block, Borders, Paragraph, Text};
-use unic::char::property::EnumeratedCharProperty;
-use unic::ucd::{Age, GeneralCategory, Name};
+use tui::layout::{Constraint, Direction, Layout, Margin, Rect};
+use tui::widgets::{Block, Borders, Row, Table, TableState};
 
 use super::character_preview_canvas::CharacterPreviewCanvas;
 use super::main_view::TerminalFrame;
-use crate::ucd::{code_point_description, Plane};
+use crate::ucd::{code_point_description, CharacterProperties};
+
+const NOT_AVAILABLE_DISPLAY_TEXT: &str = "N/A";
+
+fn add_padding_to_column_data(string: &str, column_width: u16) -> String {
+    if (column_width as usize) < string.len() {
+        return string.to_owned();
+    }
+    format!(
+        "{}{}",
+        " ".repeat(column_width as usize - string.len()),
+        string
+    )
+}
 
 pub struct CharacterDetailView {
     pub chr: char,
+
     character_preview_canvas: CharacterPreviewCanvas,
+    character_property_view_state: TableState,
 }
 
 impl CharacterDetailView {
@@ -32,6 +44,7 @@ impl CharacterDetailView {
         CharacterDetailView {
             chr,
             character_preview_canvas: CharacterPreviewCanvas::new(chr, preferred_preview_font_path),
+            character_property_view_state: TableState::default(),
         }
     }
 
@@ -57,50 +70,74 @@ impl CharacterDetailView {
         self.character_preview_canvas.next_preview_font();
     }
 
-    const NOT_AVAILABLE_DISPLAY_TEXT: &'static str = "N/A";
-
-    fn draw_character_properties(&self, frame: &mut TerminalFrame, rect: Rect) {
+    fn draw_character_properties(&mut self, frame: &mut TerminalFrame, rect: Rect) {
         let code_point_description = code_point_description(self.chr);
 
-        let name_description = match Name::of(self.chr) {
-            Some(name) => name.to_string(),
-            None => "".to_owned(),
-        };
+        // Draw character property table
+        {
+            let character_properties = CharacterProperties::new(self.chr);
+            let age_string = format!(
+                "Unicode {}",
+                character_properties
+                    .age
+                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned())
+            );
+            let block_name_string = character_properties
+                .block_name
+                .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned());
 
-        let age_description = match Age::of(self.chr) {
-            Some(age) => format!("Unicode {}", age.actual().to_string()),
-            None => CharacterDetailView::NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
-        };
+            let column_width = ((rect.width - 4) as f32 * 0.38).floor() as u16;
+            let items = [
+                Vec::<String>::default(),
+                vec![
+                    add_padding_to_column_data("Code Point", column_width),
+                    code_point_description.clone(),
+                ],
+                vec![
+                    add_padding_to_column_data("Name", column_width),
+                    character_properties.name,
+                ],
+                vec![add_padding_to_column_data("Age", column_width), age_string],
+                vec![
+                    add_padding_to_column_data("Plane", column_width),
+                    character_properties.plane_name,
+                ],
+                vec![
+                    add_padding_to_column_data("Block", column_width),
+                    block_name_string,
+                ],
+                vec![
+                    add_padding_to_column_data("General Category", column_width),
+                    character_properties.general_category,
+                ],
+            ];
 
-        let gc = GeneralCategory::of(self.chr);
-        let gc_description = format!("{}({})", gc.human_name(), gc.abbr_name());
+            let header = Vec::<&str>::default();
+            let rows = items.iter().map(|item| Row::Data(item.iter()));
 
-        let plane_name = Plane::of(self.chr).name;
+            let table = Table::new(header.iter(), rows)
+                .column_spacing(2)
+                .widths(&[Constraint::Percentage(38), Constraint::Percentage(62)]);
 
-        let block_name = match unic::ucd::Block::of(self.chr) {
-            Some(block) => block.name.to_owned(),
-            None => CharacterDetailView::NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
-        };
+            let mut table_rect = rect.inner(&Margin {
+                horizontal: 2,
+                vertical: 0,
+            });
+            table_rect.y -= 1;
+            table_rect.height += 1;
+            frame.render_stateful_widget(
+                table,
+                table_rect,
+                &mut self.character_property_view_state,
+            );
+        }
 
-        let text = [
-            Text::styled("General\n\n", Style::default().modifier(Modifier::BOLD)),
-            Text::raw(format!("Code Point: {}\n", code_point_description)),
-            Text::raw(format!("Name: {}\n", name_description)),
-            Text::raw(format!("Age: {}\n", age_description)),
-            Text::raw(format!("Plane: {}\n", plane_name)),
-            Text::raw(format!("Block: {}\n", block_name)),
-            Text::raw(format!("General Category: {}\n", gc_description)),
-        ];
-        let paragraph = Paragraph::new(text.iter())
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .title(&code_point_description),
-            )
-            .style(Style::default())
-            .alignment(Alignment::Center)
-            .wrap(true);
-
-        frame.render_widget(paragraph, rect);
+        // Draw borders
+        {
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(&code_point_description);
+            frame.render_widget(block, rect);
+        }
     }
 }

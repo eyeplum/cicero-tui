@@ -58,13 +58,14 @@ impl fmt::Display for GraphemeProperties {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CharacterProperties {
-    character: char,
-    code_point: u32,
-    name: String,
-    age: Option<String>,
-    general_category: String,
-    plane_name: String,
-    block_name: Option<String>,
+    pub character: char,
+
+    pub code_point: u32,
+    pub name: String,
+    pub age: Option<String>,
+    pub general_category: String,
+    pub plane_name: String,
+    pub block_name: Option<String>,
 }
 
 impl CharacterProperties {

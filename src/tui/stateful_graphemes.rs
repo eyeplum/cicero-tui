@@ -27,8 +27,6 @@ pub struct GraphemeRow {
 }
 
 impl GraphemeRow {
-    const CODE_POINT_STR_PADDING: usize = 8;
-
     pub fn new(chr: char) -> Self {
         GraphemeRow {
             code_point: Some(chr),
@@ -41,17 +39,11 @@ impl fmt::Display for GraphemeRow {
         match self.code_point {
             None => write!(f, ""),
             Some(chr) => {
-                let mut code_point_str = code_point_description(chr);
-                if code_point_str.len() < GraphemeRow::CODE_POINT_STR_PADDING {
-                    code_point_str =
-                        format!("{}{}", " ".repeat(8 - code_point_str.len()), code_point_str);
-                }
-
+                let code_point_str = code_point_description(chr);
                 let name = match Name::of(chr) {
                     None => "".to_owned(),
                     Some(name) => name.to_string(),
                 };
-
                 write!(f, "{}  {}  {}", code_point_str, chr, name)
             }
         }
