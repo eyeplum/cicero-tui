@@ -18,6 +18,7 @@
 
 mod character_detail_view;
 mod character_preview_canvas;
+mod character_property_view;
 mod main_view;
 mod renderer;
 mod stateful_graphemes;
