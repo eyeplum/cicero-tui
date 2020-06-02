@@ -12,8 +12,11 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use tui::layout::{Constraint, Margin, Rect};
-use tui::widgets::{Block, Borders, Row, Table, TableState};
+use std::borrow::Cow;
+
+use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::style::{Color, Style};
+use tui::widgets::{Block, Borders, List, ListState, Text};
 
 use super::main_view::TerminalFrame;
 use crate::ucd::{code_point_description, CharacterProperties};
@@ -31,85 +34,110 @@ fn add_padding_to_column_data(string: &str, column_width: u16) -> String {
     )
 }
 
+#[derive(Debug, Default)]
+struct PropertyRow {
+    title: &'static str,
+    value: String,
+
+    // The character this row links to, e.g. decomposition, or variants of Unihan, etc.
+    link: Option<char>,
+}
+
+impl PropertyRow {
+    fn new(title: &'static str, value: String) -> Self {
+        PropertyRow {
+            title,
+            value,
+            link: None, // TODO: Link not implemented
+        }
+    }
+
+    fn from_character_properties(character_properties: &CharacterProperties) -> Vec<Self> {
+        vec![
+            PropertyRow::default(),
+            PropertyRow::new(
+                "Code Point",
+                code_point_description(character_properties.character),
+            ),
+            PropertyRow::new("Name", character_properties.name.clone()),
+            PropertyRow::new(
+                "Age",
+                format!(
+                    "Unicode {}",
+                    character_properties
+                        .age
+                        .clone()
+                        .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned())
+                ),
+            ),
+            PropertyRow::new("Plane", character_properties.plane_name.clone()),
+            PropertyRow::new(
+                "Block",
+                character_properties
+                    .block_name
+                    .clone()
+                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned()),
+            ),
+            PropertyRow::new(
+                "General Category",
+                character_properties.general_category.clone(),
+            ),
+        ]
+    }
+}
+
 pub struct CharacterPropertyView {
     character_properties: CharacterProperties,
-    character_property_view_state: TableState,
+
+    // The character properties are drawn in two Lists, one on the left hand side for the titles,
+    // one on the right hand side for the values. Since they must be "scrolling" as if they were the
+    // some List, they share the same ListState (and have identical number of rows).
+    shared_list_state: ListState,
 }
 
 impl CharacterPropertyView {
     pub fn new(chr: char) -> Self {
         CharacterPropertyView {
             character_properties: CharacterProperties::new(chr),
-            character_property_view_state: TableState::default(),
+            shared_list_state: ListState::default(),
         }
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
-        let code_point_description = code_point_description(self.character_properties.character);
-
-        // Draw character property table
+        // Draw character property lists
         {
-            let age_string = format!(
-                "Unicode {}",
-                self.character_properties
-                    .age
-                    .clone()
-                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned())
-            );
-            let block_name_string = self
-                .character_properties
-                .block_name
-                .clone()
-                .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned());
+            let chunks = Layout::default()
+                .constraints(
+                    [
+                        Constraint::Percentage(32),
+                        Constraint::Length(2),
+                        Constraint::Min(10),
+                    ]
+                    .as_ref(),
+                )
+                .direction(Direction::Horizontal)
+                .vertical_margin(1)
+                .horizontal_margin(1)
+                .split(rect);
 
-            let column_width = ((rect.width - 4) as f32 * 0.38).floor() as u16;
-            let items = [
-                Vec::<String>::default(),
-                vec![
-                    add_padding_to_column_data("Code Point", column_width),
-                    code_point_description.clone(),
-                ],
-                vec![
-                    add_padding_to_column_data("Name", column_width),
-                    self.character_properties.name.clone(),
-                ],
-                vec![add_padding_to_column_data("Age", column_width), age_string],
-                vec![
-                    add_padding_to_column_data("Plane", column_width),
-                    self.character_properties.plane_name.clone(),
-                ],
-                vec![
-                    add_padding_to_column_data("Block", column_width),
-                    block_name_string,
-                ],
-                vec![
-                    add_padding_to_column_data("General Category", column_width),
-                    self.character_properties.general_category.clone(),
-                ],
-            ];
+            let rows = PropertyRow::from_character_properties(&self.character_properties);
 
-            let header = Vec::<&str>::default();
-            let rows = items.iter().map(|item| Row::Data(item.iter()));
+            let title_list = List::new(rows.iter().map(|row| {
+                Text::Styled(
+                    Cow::from(add_padding_to_column_data(row.title, chunks[0].width)),
+                    Style::new().fg(Color::LightGreen),
+                )
+            }));
+            frame.render_stateful_widget(title_list, chunks[0], &mut self.shared_list_state);
 
-            let table = Table::new(header.iter(), rows)
-                .column_spacing(2)
-                .widths(&[Constraint::Percentage(38), Constraint::Percentage(62)]);
-
-            let mut table_rect = rect.inner(&Margin {
-                horizontal: 2,
-                vertical: 0,
-            });
-            table_rect.y -= 1;
-            table_rect.height += 1;
-            frame.render_stateful_widget(
-                table,
-                table_rect,
-                &mut self.character_property_view_state,
-            );
+            let value_list = List::new(rows.iter().map(|row| Text::Raw(Cow::from(&row.value))));
+            frame.render_stateful_widget(value_list, chunks[2], &mut self.shared_list_state);
         }
 
         // Draw borders
         {
+            let code_point_description =
+                code_point_description(self.character_properties.character);
             let block = Block::default()
                 .borders(Borders::ALL)
                 .title(&code_point_description);
