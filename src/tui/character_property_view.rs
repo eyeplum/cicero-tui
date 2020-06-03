@@ -43,6 +43,9 @@ struct PropertyRow {
     link: Option<char>,
 }
 
+type NameAliases = Option<&'static [&'static str]>;
+type CharacterComponents = Option<Vec<char>>;
+
 impl PropertyRow {
     fn new(title: &'static str, value: String) -> Self {
         PropertyRow {
@@ -53,7 +56,7 @@ impl PropertyRow {
     }
 
     fn from_character_properties(character_properties: &CharacterProperties) -> Vec<Self> {
-        vec![
+        let mut property_rows = vec![
             PropertyRow::default(),
             PropertyRow::new(
                 "Code Point",
@@ -70,19 +73,107 @@ impl PropertyRow {
                         .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned())
                 ),
             ),
-            PropertyRow::new("Plane", character_properties.plane_name.clone()),
+            PropertyRow::new("Plane", character_properties.plane_name.to_owned()),
             PropertyRow::new(
                 "Block",
                 character_properties
                     .block_name
-                    .clone()
-                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT.to_owned()),
+                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT)
+                    .to_owned(),
             ),
             PropertyRow::new(
                 "General Category",
-                character_properties.general_category.clone(),
+                character_properties.general_category.to_string(),
             ),
-        ]
+            PropertyRow::default(),
+        ];
+
+        property_rows.extend(PropertyRow::from_name_aliases(
+            "Name Corrections",
+            character_properties.name_corrections,
+        ));
+        property_rows.extend(PropertyRow::from_name_aliases(
+            "Control Code Names",
+            character_properties.control_code_names,
+        ));
+        property_rows.extend(PropertyRow::from_name_aliases(
+            "Alternative Names",
+            character_properties.alternative_names,
+        ));
+        property_rows.extend(PropertyRow::from_name_aliases(
+            "Figments",
+            character_properties.figments,
+        ));
+        property_rows.extend(PropertyRow::from_name_aliases(
+            "Name Abbreviations",
+            character_properties.name_abbreviations,
+        ));
+
+        property_rows.push(PropertyRow::default());
+
+        property_rows.push(PropertyRow::new(
+            "Cased",
+            if character_properties.is_cased {
+                "Yes".to_owned()
+            } else {
+                "No".to_owned()
+            },
+        ));
+        property_rows.extend(PropertyRow::from_character_components(
+            "Uppercase",
+            &character_properties.uppercase,
+        ));
+        property_rows.extend(PropertyRow::from_character_components(
+            "Lowercase",
+            &character_properties.lowercase,
+        ));
+
+        property_rows.push(PropertyRow::default());
+
+        property_rows
+    }
+
+    fn from_name_aliases(title: &'static str, name_aliases: NameAliases) -> Vec<Self> {
+        let mut property_rows = vec![];
+        match name_aliases {
+            Some(aliases) => {
+                for (index, name_alias) in aliases.iter().enumerate() {
+                    property_rows.push(PropertyRow::new(
+                        if index == 0 { title } else { "" },
+                        (*name_alias).to_owned(),
+                    ));
+                }
+            }
+            None => property_rows.push(PropertyRow::new(
+                title,
+                NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
+            )),
+        }
+        property_rows
+    }
+
+    fn from_character_components(
+        title: &'static str,
+        character_components: &CharacterComponents,
+    ) -> Vec<Self> {
+        let mut property_rows = vec![];
+        match character_components {
+            Some(components) => {
+                for (index, component) in components.iter().enumerate() {
+                    let component_description =
+                        format!("{} {}", code_point_description(*component), *component);
+                    property_rows.push(PropertyRow::new(
+                        if index == 0 { title } else { "" },
+                        component_description,
+                    ));
+                }
+            }
+            None => property_rows.push(PropertyRow::new(
+                title,
+                NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
+            )),
+        }
+        property_rows
     }
 }
 
