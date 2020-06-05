@@ -16,6 +16,7 @@ use serde::Serialize;
 use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
 use unic::ucd::{
+    bidi::{is_bidi_control, is_bidi_mirrored, BidiClass},
     is_cased, name_aliases_of,
     normal::{decompose_compatible, DecompositionType},
     Age, Block, CanonicalCombiningClass, GeneralCategory, Name, NameAliasType,
@@ -77,13 +78,17 @@ pub struct CharacterProperties {
     pub figments: Option<&'static [&'static str]>,
     pub name_abbreviations: Option<&'static [&'static str]>,
 
-    // TODO: Implement titlecase in rust-unic
     pub is_cased: bool,
+    // TODO: Implement titlecase in rust-unic
     pub uppercase: Option<Vec<char>>, // TODO: Implement uppercase in rust-unic
     pub lowercase: Option<Vec<char>>, // TODO: Implement lowercase in rust-unic
 
     pub ccc: u8,
     pub decomposition: Option<Decomposition>,
+
+    pub bidi_class: StringValuedProperty,
+    pub is_bidi_control: bool,
+    pub is_bidi_mirrored: bool,
 }
 
 impl CharacterProperties {
@@ -127,6 +132,10 @@ impl CharacterProperties {
 
             ccc: CanonicalCombiningClass::of(character).number(),
             decomposition: Decomposition::new(character),
+
+            bidi_class: StringValuedProperty::new(BidiClass::of(character)),
+            is_bidi_control: is_bidi_control(character),
+            is_bidi_mirrored: is_bidi_mirrored(character),
         }
     }
 

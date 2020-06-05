@@ -110,13 +110,9 @@ impl PropertyRow {
 
         property_rows.push(PropertyRow::default());
 
-        property_rows.push(PropertyRow::new(
-            "Cased",
-            if character_properties.is_cased {
-                "Yes".to_owned()
-            } else {
-                "No".to_owned()
-            },
+        property_rows.push(PropertyRow::from_bool(
+            "Is Cased",
+            character_properties.is_cased,
         ));
         property_rows.extend(PropertyRow::from_optional_character_components(
             "Uppercase",
@@ -156,6 +152,21 @@ impl PropertyRow {
                 ));
             }
         }
+
+        property_rows.push(PropertyRow::default());
+
+        property_rows.push(PropertyRow::new(
+            "Bidi Class",
+            character_properties.bidi_class.to_string(),
+        ));
+        property_rows.push(PropertyRow::from_bool(
+            "Is Bidi Control",
+            character_properties.is_bidi_control,
+        ));
+        property_rows.push(PropertyRow::from_bool(
+            "Is Bidi Mirroed",
+            character_properties.is_bidi_mirrored,
+        ));
 
         property_rows.push(PropertyRow::default());
 
@@ -205,6 +216,10 @@ impl PropertyRow {
                 NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
             )],
         }
+    }
+
+    fn from_bool(title: &'static str, b: bool) -> Self {
+        PropertyRow::new(title, if b { "Yes".to_owned() } else { "No".to_owned() })
     }
 }
 
