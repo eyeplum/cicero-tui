@@ -44,7 +44,6 @@ struct PropertyRow {
 }
 
 type NameAliases = Option<&'static [&'static str]>;
-type CharacterComponents = Option<Vec<char>>;
 
 impl PropertyRow {
     fn new(title: &'static str, value: String) -> Self {
@@ -119,14 +118,44 @@ impl PropertyRow {
                 "No".to_owned()
             },
         ));
-        property_rows.extend(PropertyRow::from_character_components(
+        property_rows.extend(PropertyRow::from_optional_character_components(
             "Uppercase",
-            &character_properties.uppercase,
+            &character_properties.uppercase.as_ref(),
         ));
-        property_rows.extend(PropertyRow::from_character_components(
+        property_rows.extend(PropertyRow::from_optional_character_components(
             "Lowercase",
-            &character_properties.lowercase,
+            &character_properties.lowercase.as_ref(),
         ));
+
+        property_rows.push(PropertyRow::default());
+
+        property_rows.push(PropertyRow::new(
+            "Ccc",
+            character_properties.ccc_description(),
+        ));
+
+        match &character_properties.decomposition {
+            Some(decomposition) => {
+                property_rows.push(PropertyRow::new(
+                    "Decomposition Type",
+                    decomposition.decomposition_type.to_string(),
+                ));
+                property_rows.extend(PropertyRow::from_character_components(
+                    "Decompositions",
+                    &decomposition.components,
+                ));
+            }
+            None => {
+                property_rows.push(PropertyRow::new(
+                    "Decomposition Type",
+                    NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
+                ));
+                property_rows.push(PropertyRow::new(
+                    "Decompositions",
+                    NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
+                ));
+            }
+        }
 
         property_rows.push(PropertyRow::default());
 
@@ -152,28 +181,30 @@ impl PropertyRow {
         property_rows
     }
 
-    fn from_character_components(
-        title: &'static str,
-        character_components: &CharacterComponents,
-    ) -> Vec<Self> {
+    fn from_character_components(title: &'static str, character_components: &[char]) -> Vec<Self> {
         let mut property_rows = vec![];
-        match character_components {
-            Some(components) => {
-                for (index, component) in components.iter().enumerate() {
-                    let component_description =
-                        format!("{} {}", code_point_description(*component), *component);
-                    property_rows.push(PropertyRow::new(
-                        if index == 0 { title } else { "" },
-                        component_description,
-                    ));
-                }
-            }
-            None => property_rows.push(PropertyRow::new(
-                title,
-                NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
-            )),
+        for (index, component) in character_components.iter().enumerate() {
+            let component_description =
+                format!("{} {}", code_point_description(*component), *component);
+            property_rows.push(PropertyRow::new(
+                if index == 0 { title } else { "" },
+                component_description,
+            ));
         }
         property_rows
+    }
+
+    fn from_optional_character_components(
+        title: &'static str,
+        character_components: &Option<&Vec<char>>,
+    ) -> Vec<Self> {
+        match character_components {
+            Some(components) => PropertyRow::from_character_components(title, components),
+            None => vec![PropertyRow::new(
+                title,
+                NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
+            )],
+        }
     }
 }
 

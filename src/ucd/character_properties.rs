@@ -15,7 +15,11 @@
 use serde::Serialize;
 use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
-use unic::ucd::{is_cased, name_aliases_of, Age, Block, GeneralCategory, Name, NameAliasType};
+use unic::ucd::{
+    is_cased, name_aliases_of,
+    normal::{decompose_compatible, DecompositionType},
+    Age, Block, CanonicalCombiningClass, GeneralCategory, Name, NameAliasType,
+};
 
 use std::fmt;
 
@@ -73,10 +77,13 @@ pub struct CharacterProperties {
     pub figments: Option<&'static [&'static str]>,
     pub name_abbreviations: Option<&'static [&'static str]>,
 
+    // TODO: Implement titlecase in rust-unic
     pub is_cased: bool,
     pub uppercase: Option<Vec<char>>, // TODO: Implement uppercase in rust-unic
     pub lowercase: Option<Vec<char>>, // TODO: Implement lowercase in rust-unic
-                                      // TODO: Implement title case in rust-unic
+
+    pub ccc: u8,
+    pub decomposition: Option<Decomposition>,
 }
 
 impl CharacterProperties {
@@ -117,6 +124,46 @@ impl CharacterProperties {
             } else {
                 None
             },
+
+            ccc: CanonicalCombiningClass::of(character).number(),
+            decomposition: Decomposition::new(character),
+        }
+    }
+
+    pub fn ccc_description(&self) -> String {
+        let long_description = match self.ccc {
+            0 => Some("Not_Reordered".to_owned()),
+            1 => Some("Overlay".to_owned()),
+            6 => Some("Han_Reading".to_owned()),
+            7 => Some("Nukta".to_owned()),
+            8 => Some("Kana_Voicing".to_owned()),
+            9 => Some("Virama".to_owned()),
+
+            // Although not all numbers are valid in this range (e.g. CCC199 is invalid),
+            // we are relying on rust-unic to ensure the ccc_num is always valid
+            10..=199 => Some(format!("CCC{}", self.ccc)),
+
+            200 => Some("Attached_Below_Left".to_owned()),
+            202 => Some("Attached_Below".to_owned()),
+            214 => Some("Attached_Above".to_owned()),
+            216 => Some("Attached_Above_Right".to_owned()),
+            218 => Some("Below_Left".to_owned()),
+            220 => Some("Below".to_owned()),
+            222 => Some("Below_Right".to_owned()),
+            224 => Some("Left".to_owned()),
+            226 => Some("Right".to_owned()),
+            228 => Some("Above_Left".to_owned()),
+            230 => Some("Above".to_owned()),
+            232 => Some("Above_Right".to_owned()),
+            233 => Some("Double_Below".to_owned()),
+            234 => Some("Double_Above".to_owned()),
+            240 => Some("Iota_Subscript".to_owned()),
+            _ => None,
+        };
+
+        match long_description {
+            Some(long_description) => format!("{}({})", long_description, self.ccc.to_string()),
+            None => self.ccc.to_string(),
         }
     }
 }
@@ -157,5 +204,25 @@ impl StringValuedProperty {
 impl fmt::Display for StringValuedProperty {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}({})", self.human_readable, self.abbr)
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct Decomposition {
+    pub decomposition_type: StringValuedProperty,
+    pub components: Vec<char>,
+}
+
+impl Decomposition {
+    pub fn new(chr: char) -> Option<Self> {
+        let decomposition_type = StringValuedProperty::new(DecompositionType::of(chr)?);
+
+        let mut components = vec![];
+        decompose_compatible(chr, |component| components.push(component));
+
+        Some(Decomposition {
+            decomposition_type,
+            components,
+        })
     }
 }
