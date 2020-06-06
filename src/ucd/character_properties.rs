@@ -180,7 +180,7 @@ impl CharacterProperties {
         };
 
         match long_description {
-            Some(long_description) => format!("{}({})", long_description, self.ccc.to_string()),
+            Some(long_description) => format!("{} ({})", long_description, self.ccc.to_string()),
             None => self.ccc.to_string(),
         }
     }
@@ -221,7 +221,7 @@ impl StringValuedProperty {
 
 impl fmt::Display for StringValuedProperty {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}({})", self.human_readable, self.abbr)
+        write!(f, "{} ({})", self.human_readable, self.abbr)
     }
 }
 
