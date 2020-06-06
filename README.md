@@ -1,6 +1,6 @@
 # cicero
 
-A Unicode Tool with terminal user interface.
+A Unicode tool with terminal user interface.
 
 ## Usage
 

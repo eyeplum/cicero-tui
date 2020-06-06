@@ -1,8 +1,15 @@
 [package]
 name = "cicero"
 version = "0.1.0"
-authors = ["Yan Li <eyeplum@gmail.com>"]
 edition = "2018"
+authors = ["Yan Li <eyeplum@gmail.com>"]
+license = "GPLv3"
+description = "A Unicode tool with terminal user interface"
+readme = "README.md"
+homepage = "https://github.com/eyeplum/cicero-tui"
+repository = "https://github.com/eyeplum/cicero-tui"
+keywords = ["cli", "tui", "unicode"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 clap = "2.33"
