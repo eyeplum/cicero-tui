@@ -1,5 +1,5 @@
 [package]
-name = "cicero-tui"
+name = "cicero"
 version = "0.1.0"
 authors = ["Yan Li <eyeplum@gmail.com>"]
 edition = "2018"

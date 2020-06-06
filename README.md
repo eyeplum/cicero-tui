@@ -1,15 +1,15 @@
-# cicero-tui
+# cicero
 
 A Unicode Tool with terminal user interface.
 
 ## Usage
 
 ```
-$ cicero-tui -h
+$ cicero -h
 Cicero: A Unicode Tool 0.1.0 (Unicode Version 13.0.0)
 
 USAGE:
-    cicero-tui [FLAGS] [OPTIONS] [INPUT]
+    cicero [FLAGS] [OPTIONS] [INPUT]
 
 FLAGS:
     -u               Parse INPUT as comma seperated code points,
