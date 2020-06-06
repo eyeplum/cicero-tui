@@ -128,7 +128,7 @@ impl MainView {
 
         let help_item = if self.character_detail_view.is_some() {
             [Text::raw(
-                "[ESC]: Hide Detail | [C-\u{2193}]: Scroll Detail Down | [C-\u{2191}]: Scroll Detail Up",
+                "[ESC]: Hide Detail | [C-D]: Scroll Detail Down | [C-U}]: Scroll Detail Up",
             )]
         } else {
             [Text::raw("[ESC]: Quit")]
@@ -154,27 +154,15 @@ impl MainView {
                 }
             }
             KeyCode::Up => {
-                if event.modifiers.contains(KeyModifiers::CONTROL)
-                    && self.character_detail_view.is_some()
-                {
-                    self.character_detail_view.as_mut().unwrap().scroll_up();
-                } else {
-                    self.graphemes.select_previous();
-                    if self.character_detail_view.is_some() {
-                        self.update_showing_detail(&app_state);
-                    }
+                self.graphemes.select_previous();
+                if self.character_detail_view.is_some() {
+                    self.update_showing_detail(&app_state);
                 }
             }
             KeyCode::Down => {
-                if event.modifiers.contains(KeyModifiers::CONTROL)
-                    && self.character_detail_view.is_some()
-                {
-                    self.character_detail_view.as_mut().unwrap().scroll_down();
-                } else {
-                    self.graphemes.select_next();
-                    if self.character_detail_view.is_some() {
-                        self.update_showing_detail(&app_state);
-                    }
+                self.graphemes.select_next();
+                if self.character_detail_view.is_some() {
+                    self.update_showing_detail(&app_state);
                 }
             }
             KeyCode::Left => {
@@ -192,16 +180,34 @@ impl MainView {
                 }
             }
             KeyCode::Enter => self.update_showing_detail(&app_state),
-            KeyCode::Char(c) => {
-                self.user_input.push(c);
-                self.graphemes = StatefulGraphemes::new(&self.user_input);
-            }
+            KeyCode::Char(c) => self.handle_character_input(c, event.modifiers),
             KeyCode::Backspace => {
                 self.user_input.pop();
                 self.graphemes = StatefulGraphemes::new(&self.user_input);
             }
             _ => {}
         };
+    }
+
+    fn handle_character_input(&mut self, chr: char, modifiers: KeyModifiers) {
+        if chr == 'u'
+            && modifiers.contains(KeyModifiers::CONTROL)
+            && self.character_detail_view.is_some()
+        {
+            self.character_detail_view.as_mut().unwrap().scroll_up();
+            return;
+        }
+
+        if chr == 'd'
+            && modifiers.contains(KeyModifiers::CONTROL)
+            && self.character_detail_view.is_some()
+        {
+            self.character_detail_view.as_mut().unwrap().scroll_down();
+            return;
+        }
+
+        self.user_input.push(chr);
+        self.graphemes = StatefulGraphemes::new(&self.user_input);
     }
 
     fn update_showing_detail(&mut self, app_state: &ApplicationState) {
