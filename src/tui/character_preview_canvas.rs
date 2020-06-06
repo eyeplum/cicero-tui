@@ -146,9 +146,9 @@ impl CharacterPreviewCanvas {
             .horizontal_margin(1)
             .constraints(
                 [
-                    Constraint::Length(13),
+                    Constraint::Length(15),
                     Constraint::Min(1),
-                    Constraint::Length(13),
+                    Constraint::Length(15),
                 ]
                 .as_ref(),
             )
@@ -158,7 +158,7 @@ impl CharacterPreviewCanvas {
         match &self.character_preview {
             Ok(character_preview) => {
                 if character_preview.has_previous_font() {
-                    let help_item = [Text::raw("[LEFT]: Prev.")];
+                    let help_item = [Text::raw("[\u{2190}]: Prev. Font")];
                     let help_text = Paragraph::new(help_item.iter())
                         .style(Style::default().fg(Color::LightGreen))
                         .alignment(Alignment::Left);
@@ -173,7 +173,7 @@ impl CharacterPreviewCanvas {
                     frame.render_widget(help_text, chunks[1]);
                 }
                 if character_preview.has_next_font() {
-                    let help_item = [Text::raw("[RIGHT]: Next")];
+                    let help_item = [Text::raw("[\u{2192}]: Next Font")];
                     let help_text = Paragraph::new(help_item.iter())
                         .style(Style::default().fg(Color::LightGreen))
                         .alignment(Alignment::Right);
