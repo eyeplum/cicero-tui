@@ -2,7 +2,32 @@
 
 A Unicode Tool with terminal user interface.
 
-[![](https://github.com/eyeplum/cicero-tui/workflows/CI/badge.svg)](https://github.com/eyeplum/cicero-tui/actions)
+## Usage
+
+```
+$ cicero-tui -h
+Cicero: A Unicode Tool 0.1.0 (Unicode Version 13.0.0)
+
+USAGE:
+    cicero-tui [FLAGS] [OPTIONS] [INPUT]
+
+FLAGS:
+    -u               Parse INPUT as comma seperated code points,
+                     same as '--input-type=code-points',
+                     ignored if '--input-type' is specified
+    -h, --help       Prints help information
+    -t, --tui        Show Terminal UI
+    -V, --version    Prints version information
+
+OPTIONS:
+    -i, --input-type <TYPE>         Specify input type, 'string' by default,
+                                    valid values: string, code-points
+    -o, --output-format <FORMAT>    Specify output format, 'text' by default,
+                                    valid values: text, json
+
+ARGS:
+    <INPUT>    a string or comma separated code points
+```
 
 ## Build Requirements
 
