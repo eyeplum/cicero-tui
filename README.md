@@ -29,7 +29,7 @@ ARGS:
     <INPUT>    a string or comma separated code points
 ```
 
-## Install (build from source)
+## Installation (building from source)
 
 Currently the only way to install cicero is by building from source.
 
@@ -45,7 +45,7 @@ Make sure the latest stable Rust toolchain is installed. See [rustup](https://ru
 
 ### fontconfig and freetype
 
-Cicero requires `fontconfig` and `freetype` libraries to build. In order to install them:
+Cicero requires `fontconfig` and `freetype` libraries to build.
 
 - On GNU/Linux (Tested on Ubuntu 18.04 LTS)
 
@@ -62,12 +62,16 @@ Cicero requires `fontconfig` and `freetype` libraries to build. In order to inst
     $ brew install pkg-config fontconfig
     ```
 
-### Build
+### Building
 
 Building cicero should be as easy as:
 
 ```
+$ git clone https://github.com/eyeplum/cicero-tui
+$ cd cicero-tui
 $ cargo build --release
+$ ./target/release/cicero --version
+Cicero: A Unicode Tool 0.1.0 (Unicode Version 13.0.0)
 ```
 
 You could also copy the final product to somewhere in your `PATH`, for example:
