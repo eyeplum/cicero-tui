@@ -15,7 +15,7 @@
 use std::borrow::Cow;
 
 use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Style};
+use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, ListState, Text};
 
 use super::main_view::TerminalFrame;
@@ -56,7 +56,6 @@ impl PropertyRow {
 
     fn from_character_properties(character_properties: &CharacterProperties) -> Vec<Self> {
         let mut property_rows = vec![
-            PropertyRow::default(),
             PropertyRow::new(
                 "Code Point",
                 code_point_description(character_properties.character),
@@ -186,8 +185,6 @@ impl PropertyRow {
             character_properties.simplified_variant,
         ));
 
-        property_rows.push(PropertyRow::default());
-
         property_rows
     }
 
@@ -248,6 +245,10 @@ impl PropertyRow {
     fn from_bool(title: &'static str, b: bool) -> Self {
         PropertyRow::new(title, if b { "Yes".to_owned() } else { "No".to_owned() })
     }
+
+    fn is_default(&self) -> bool {
+        self.title.is_empty() && self.value.is_empty() && self.link.is_none()
+    }
 }
 
 pub struct CharacterPropertyView {
@@ -257,6 +258,7 @@ pub struct CharacterPropertyView {
     // one on the right hand side for the values. Since they must be "scrolling" as if they were the
     // some List, they share the same ListState (and have identical number of rows).
     shared_list_state: ListState,
+    rows: Vec<PropertyRow>,
 }
 
 impl CharacterPropertyView {
@@ -264,6 +266,7 @@ impl CharacterPropertyView {
         CharacterPropertyView {
             character_properties: CharacterProperties::new(chr),
             shared_list_state: ListState::default(),
+            rows: vec![],
         }
     }
 
@@ -284,17 +287,20 @@ impl CharacterPropertyView {
                 .horizontal_margin(1)
                 .split(rect);
 
-            let rows = PropertyRow::from_character_properties(&self.character_properties);
+            self.rows = PropertyRow::from_character_properties(&self.character_properties);
 
-            let title_list = List::new(rows.iter().map(|row| {
+            let title_list = List::new(self.rows.iter().map(|row| {
                 Text::Styled(
                     Cow::from(add_padding_to_column_data(row.title, chunks[0].width)),
                     Style::new().fg(Color::LightGreen),
                 )
-            }));
+            }))
+            .highlight_style(Style::default().fg(Color::LightGreen));
             frame.render_stateful_widget(title_list, chunks[0], &mut self.shared_list_state);
 
-            let value_list = List::new(rows.iter().map(|row| Text::Raw(Cow::from(&row.value))));
+            let value_list =
+                List::new(self.rows.iter().map(|row| Text::Raw(Cow::from(&row.value))))
+                    .highlight_style(Style::default().modifier(Modifier::BOLD));
             frame.render_stateful_widget(value_list, chunks[2], &mut self.shared_list_state);
         }
 
@@ -306,6 +312,52 @@ impl CharacterPropertyView {
                 .borders(Borders::ALL)
                 .title(&code_point_description);
             frame.render_widget(block, rect);
+        }
+    }
+
+    pub fn scroll_down(&mut self) {
+        if self.rows.is_empty() {
+            return;
+        }
+
+        let proposed_selection = match self.shared_list_state.selected() {
+            Some(selected) => usize::min(selected + 1, self.rows.len() - 1),
+            None => 0,
+        };
+
+        if self.rows[proposed_selection].is_default() {
+            if proposed_selection + 1 < self.rows.len() - 1
+                && !self.rows[proposed_selection + 1].is_default()
+            {
+                self.shared_list_state.select(Some(proposed_selection + 1));
+            }
+        } else {
+            self.shared_list_state.select(Some(proposed_selection));
+        }
+    }
+
+    pub fn scroll_up(&mut self) {
+        if self.rows.is_empty() {
+            return;
+        }
+
+        let proposed_selection = match self.shared_list_state.selected() {
+            Some(selected) => {
+                if selected > 0 {
+                    selected - 1
+                } else {
+                    0
+                }
+            }
+            None => self.rows.len() - 1,
+        };
+
+        if self.rows[proposed_selection].is_default() {
+            if proposed_selection > 0 && !self.rows[proposed_selection - 1].is_default() {
+                self.shared_list_state.select(Some(proposed_selection - 1));
+            }
+        } else {
+            self.shared_list_state.select(Some(proposed_selection));
         }
     }
 }

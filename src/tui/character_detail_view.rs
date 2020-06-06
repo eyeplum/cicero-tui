@@ -52,4 +52,12 @@ impl CharacterDetailView {
     pub fn next_preview_font(&mut self) {
         self.character_preview_canvas.next_preview_font();
     }
+
+    pub fn scroll_down(&mut self) {
+        self.character_property_view.scroll_down();
+    }
+
+    pub fn scroll_up(&mut self) {
+        self.character_property_view.scroll_up();
+    }
 }

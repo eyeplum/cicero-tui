@@ -14,7 +14,7 @@
 
 use std::io::Stdout;
 
-use crossterm::event::{read, Event, KeyCode, KeyEvent};
+use crossterm::event::{read, Event, KeyCode, KeyEvent, KeyModifiers};
 use crossterm::Result;
 use tui::backend::CrosstermBackend;
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
@@ -127,7 +127,9 @@ impl MainView {
             .split(rect);
 
         let help_item = if self.character_detail_view.is_some() {
-            [Text::raw("[ESC]: Hide Detail")]
+            [Text::raw(
+                "[ESC]: Hide Detail | [C-\u{2193}]: Scroll Detail Down | [C-\u{2191}]: Scroll Detail Up",
+            )]
         } else {
             [Text::raw("[ESC]: Quit")]
         };
@@ -152,15 +154,27 @@ impl MainView {
                 }
             }
             KeyCode::Up => {
-                self.graphemes.select_previous();
-                if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                if event.modifiers.contains(KeyModifiers::CONTROL)
+                    && self.character_detail_view.is_some()
+                {
+                    self.character_detail_view.as_mut().unwrap().scroll_up();
+                } else {
+                    self.graphemes.select_previous();
+                    if self.character_detail_view.is_some() {
+                        self.update_showing_detail(&app_state);
+                    }
                 }
             }
             KeyCode::Down => {
-                self.graphemes.select_next();
-                if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                if event.modifiers.contains(KeyModifiers::CONTROL)
+                    && self.character_detail_view.is_some()
+                {
+                    self.character_detail_view.as_mut().unwrap().scroll_down();
+                } else {
+                    self.graphemes.select_next();
+                    if self.character_detail_view.is_some() {
+                        self.update_showing_detail(&app_state);
+                    }
                 }
             }
             KeyCode::Left => {
