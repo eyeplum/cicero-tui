@@ -17,9 +17,10 @@ use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
 use unic::ucd::{
     bidi::{is_bidi_control, is_bidi_mirrored, BidiClass},
-    is_cased, name_aliases_of,
+    is_cased, mandarin_of, name_aliases_of,
     normal::{decompose_compatible, DecompositionType},
-    Age, Block, CanonicalCombiningClass, GeneralCategory, Name, NameAliasType,
+    simplified_variant_of, traditional_variant_of, Age, Block, CanonicalCombiningClass,
+    GeneralCategory, Name, NameAliasType,
 };
 
 use std::fmt;
@@ -89,6 +90,10 @@ pub struct CharacterProperties {
     pub bidi_class: StringValuedProperty,
     pub is_bidi_control: bool,
     pub is_bidi_mirrored: bool,
+
+    pub simplified_variant: Option<char>,
+    pub traditional_variant: Option<char>,
+    pub mandarin: Option<&'static str>,
 }
 
 impl CharacterProperties {
@@ -136,6 +141,10 @@ impl CharacterProperties {
             bidi_class: StringValuedProperty::new(BidiClass::of(character)),
             is_bidi_control: is_bidi_control(character),
             is_bidi_mirrored: is_bidi_mirrored(character),
+
+            mandarin: mandarin_of(character),
+            traditional_variant: traditional_variant_of(character),
+            simplified_variant: simplified_variant_of(character),
         }
     }
 

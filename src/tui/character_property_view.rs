@@ -170,6 +170,24 @@ impl PropertyRow {
 
         property_rows.push(PropertyRow::default());
 
+        property_rows.push(PropertyRow::new(
+            "Mandarin",
+            character_properties
+                .mandarin
+                .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT)
+                .to_owned(),
+        ));
+        property_rows.push(PropertyRow::from_optional_character(
+            "Traditional Variant",
+            character_properties.traditional_variant,
+        ));
+        property_rows.push(PropertyRow::from_optional_character(
+            "Simplified Variant",
+            character_properties.simplified_variant,
+        ));
+
+        property_rows.push(PropertyRow::default());
+
         property_rows
     }
 
@@ -195,11 +213,9 @@ impl PropertyRow {
     fn from_character_components(title: &'static str, character_components: &[char]) -> Vec<Self> {
         let mut property_rows = vec![];
         for (index, component) in character_components.iter().enumerate() {
-            let component_description =
-                format!("{} {}", code_point_description(*component), *component);
-            property_rows.push(PropertyRow::new(
+            property_rows.push(PropertyRow::from_character(
                 if index == 0 { title } else { "" },
-                component_description,
+                *component,
             ));
         }
         property_rows
@@ -215,6 +231,17 @@ impl PropertyRow {
                 title,
                 NOT_AVAILABLE_DISPLAY_TEXT.to_owned(),
             )],
+        }
+    }
+
+    fn from_character(title: &'static str, chr: char) -> Self {
+        PropertyRow::new(title, format!("{} {}", code_point_description(chr), chr))
+    }
+
+    fn from_optional_character(title: &'static str, optional_chr: Option<char>) -> Self {
+        match optional_chr {
+            Some(chr) => PropertyRow::from_character(title, chr),
+            None => PropertyRow::new(title, NOT_AVAILABLE_DISPLAY_TEXT.to_owned()),
         }
     }
 
