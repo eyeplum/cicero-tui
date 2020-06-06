@@ -127,9 +127,7 @@ impl MainView {
             .split(rect);
 
         let help_item = if self.character_detail_view.is_some() {
-            [Text::raw(
-                "[ESC]: Hide Detail | [C-D]: Scroll Detail Down | [C-U}]: Scroll Detail Up",
-            )]
+            [Text::raw("[ESC]: Hide Detail | [C-D][C-U]: Scroll Detail")]
         } else {
             [Text::raw("[ESC]: Quit")]
         };
