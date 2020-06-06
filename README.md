@@ -29,15 +29,23 @@ ARGS:
     <INPUT>    a string or comma separated code points
 ```
 
-## Build Requirements
+## Install (build from source)
+
+Currently the only way to install cicero is by building from source.
+
+### Supported Platforms
+
+Cicero is tested on GNU/Linux and macOS.
+
+Building on Windows is not possible at the moment, but Windows Subsystem for Linux should work.
 
 ### Rust
 
-Make sure a Rust toolchain is installed. See [rustup](https://rustup.rs/).
+Make sure the latest stable Rust toolchain is installed. See [rustup](https://rustup.rs/).
 
 ### fontconfig and freetype
 
-This tool requires `fontconfig` and `freetype` libraries to build.
+Cicero requires `fontconfig` and `freetype` libraries to build. In order to install them:
 
 - On GNU/Linux (Tested on Ubuntu 18.04 LTS)
 
@@ -53,6 +61,20 @@ This tool requires `fontconfig` and `freetype` libraries to build.
     # Assuming homebrew is installed
     $ brew install pkg-config fontconfig
     ```
+
+### Build
+
+Building cicero should be as easy as:
+
+```
+$ cargo build --release
+```
+
+You could also copy the final product to somewhere in your `PATH`, for example:
+
+```
+$ cp target/release/cicero $HOME/.local/bin/
+```
 
 ## License
 [![](images/gplv3.png)](https://www.gnu.org/licenses/gpl-3.0.html)
