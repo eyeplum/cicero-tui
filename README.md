@@ -34,6 +34,12 @@ ARGS:
 The easiest way to install Cicero is via homebrew tap.
 
 ```
+$ brew install eyeplum/tap/cicero-tui
+```
+
+Or alternatively:
+
+```
 $ brew tap eyeplum/tap
 $ brew install cicero-tui
 ```
