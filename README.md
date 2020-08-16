@@ -1,6 +1,6 @@
 # cicero
 
-A Unicode tool with terminal user interface.
+Unicode tool with a terminal user interface.
 
 ## Usage
 
@@ -29,9 +29,18 @@ ARGS:
     <INPUT>    a string or comma separated code points
 ```
 
+## Installation (homebrew tap)
+
+The easiest way to install Cicero is via homebrew tap.
+
+```
+$ brew tap eyeplum/tap
+$ brew install cicero-tui
+```
+
 ## Installation (building from source)
 
-Currently the only way to install cicero is by building from source.
+You can also build Cicero from source.
 
 ### Supported Platforms
 
