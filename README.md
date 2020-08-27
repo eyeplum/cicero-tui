@@ -6,7 +6,7 @@ Unicode tool with a terminal user interface.
 
 ## Usage
 
-```sh
+```
 $ cicero -h
 Cicero: A Unicode Tool 0.1.0 (Unicode Version 13.0.0)
 
@@ -35,13 +35,13 @@ ARGS:
 
 The easiest way to install Cicero is via homebrew tap.
 
-```
+```sh
 $ brew install eyeplum/tap/cicero-tui
 ```
 
 Or alternatively:
 
-```
+```sh
 $ brew tap eyeplum/tap
 $ brew install cicero-tui
 ```
