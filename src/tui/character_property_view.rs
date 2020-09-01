@@ -14,6 +14,7 @@
 
 use std::borrow::Cow;
 
+use hex_slice::AsHex;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, ListState, Text};
@@ -183,6 +184,17 @@ impl PropertyRow {
         property_rows.push(PropertyRow::from_optional_character(
             "Simplified Variant",
             character_properties.simplified_variant,
+        ));
+
+        property_rows.push(PropertyRow::default());
+
+        property_rows.push(PropertyRow::new(
+            "UTF-8",
+            format!("{:#04x}", character_properties.utf8.as_hex()),
+        ));
+        property_rows.push(PropertyRow::new(
+            "UTF-16",
+            format!("{:#06x}", character_properties.utf16.as_hex()),
         ));
 
         property_rows
