@@ -12,6 +12,7 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
+use hex_slice::AsHex;
 use serde::Serialize;
 use unic::char::property::EnumeratedCharProperty;
 use unic::segment::Graphemes;
@@ -201,8 +202,10 @@ impl fmt::Display for CharacterProperties {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(
             f,
-            "{}  {}  {}",
+            "{} (utf-16:{:#06x} utf-8:{:#04x})  {}  {}",
             code_point_description(self.character),
+            self.utf16.as_hex(),
+            self.utf8.as_hex(),
             self.character,
             self.name,
         )?;

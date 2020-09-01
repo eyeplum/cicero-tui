@@ -57,6 +57,7 @@ dependencies = [
  "clap",
  "crossterm",
  "freetype-rs",
+ "hex-slice",
  "scopeguard",
  "serde",
  "serde_json",
@@ -185,6 +186,12 @@ checksum = "91780f809e750b0a89f5544be56617ff6b1227ee485bcb06ebe10cdf89bd3b71"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "hex-slice"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5491a308e0214554f07a81d8944abe45f552871c12e3c3c6e7e5d354039a6c4c"
 
 [[package]]
 name = "iovec"
