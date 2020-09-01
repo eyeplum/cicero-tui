@@ -67,6 +67,8 @@ pub struct CharacterProperties {
     pub character: char,
 
     pub code_point: u32,
+    pub utf16: Vec<u16>,
+    pub utf8: Vec<u8>,
     pub name: String,
     pub age: Option<String>,
     pub general_category: StringValuedProperty,
@@ -98,10 +100,19 @@ pub struct CharacterProperties {
 
 impl CharacterProperties {
     pub fn new(character: char) -> Self {
+        let mut utf16_storage = [0; 2];
+        let utf16_slice = character.encode_utf16(&mut utf16_storage);
+
+        let mut utf8_storage = [0; 4];
+        let utf8_slice = character.encode_utf8(&mut utf8_storage);
+
         CharacterProperties {
             character,
 
             code_point: character as u32,
+            utf16: utf16_slice.to_vec(),
+            utf8: utf8_slice.as_bytes().to_vec(),
+
             name: match Name::of(character) {
                 Some(name) => name.to_string(),
                 None => "".to_owned(),
