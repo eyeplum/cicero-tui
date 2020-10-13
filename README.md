@@ -8,23 +8,23 @@ Unicode tool with a terminal user interface.
 
 ```
 $ cicero -h
-Cicero: A Unicode Tool 0.1.0 (Unicode Version 13.0.0)
+Cicero: A Unicode Tool 0.1.1 (Unicode Version 13.0.0)
 
 USAGE:
     cicero [FLAGS] [OPTIONS] [INPUT]
 
 FLAGS:
-    -u               Parse INPUT as comma seperated code points,
+    -u               Parses INPUT as comma separated code points,
                      same as '--input-type=code-points',
                      ignored if '--input-type' is specified
     -h, --help       Prints help information
-    -t, --tui        Show Terminal UI
+    -t, --tui        Shows Terminal UI
     -V, --version    Prints version information
 
 OPTIONS:
-    -i, --input-type <TYPE>         Specify input type, 'string' by default,
+    -i, --input-type <TYPE>         Specifies input type, 'string' by default,
                                     valid values: string, code-points
-    -o, --output-format <FORMAT>    Specify output format, 'text' by default,
+    -o, --output-format <FORMAT>    Specifies output format, 'text' by default,
                                     valid values: text, json
 
 ARGS:
