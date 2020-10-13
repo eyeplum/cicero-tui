@@ -36,20 +36,25 @@ pub const FLAG_NAME_CODE_POINT_INPUT_MODE: &str = "code_point_input_mode";
 
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
-#[derive(Debug)]
 pub enum Error {
     UnrecognizedInputType(String),
     UnrecognizedOutputFormat(String),
+}
+
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self)
+    }
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::UnrecognizedInputType(input_type) => {
-                write!(f, "Unrecognized input type: '{}'", input_type)
+                write!(f, "Unrecognized input type '{}'", input_type)
             }
             Error::UnrecognizedOutputFormat(output_format) => {
-                write!(f, "Unrecognized output format: '{}'", output_format)
+                write!(f, "Unrecognized output format '{}'", output_format)
             }
         }
     }
