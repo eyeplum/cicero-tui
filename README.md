@@ -46,6 +46,22 @@ $ brew tap eyeplum/tap
 $ brew install cicero-tui
 ```
 
+## Installation (AUR)
+
+`cicero` can be installed from available [AUR packages](https://aur.archlinux.org/packages/?O=0&SeB=b&K=cicero&outdated=&SB=n&SO=a&PP=50&do_Search=Go) using an [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers). For example,
+
+```sh
+$ yay -S cicero
+```
+
+If you prefer, you can clone the [AUR packages](https://aur.archlinux.org/packages/?O=0&SeB=b&K=cicero&outdated=&SB=n&SO=a&PP=50&do_Search=Go) and then compile them with [makepkg](https://wiki.archlinux.org/index.php/Makepkg). For example,
+
+```sh
+$ git clone https://aur.archlinux.org/cicero.git
+$ cd cicero
+$ makepkg -si
+```
+
 ## Installation (building from source)
 
 You can also build Cicero from source.
