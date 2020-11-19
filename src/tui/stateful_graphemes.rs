@@ -62,7 +62,7 @@ pub struct StatefulGraphemes {
 impl StatefulGraphemes {
     pub fn new(s: &str) -> Self {
         let graphemes: Vec<Vec<char>> = Graphemes::new(s)
-            .map(|grapheme| grapheme.chars().map(|chr| chr).collect())
+            .map(|grapheme| grapheme.chars().collect())
             .collect();
 
         let mut state = ListState::default();
