@@ -128,6 +128,12 @@ impl StatefulGraphemes {
         };
     }
 
+    pub fn select_next_n(&mut self, n: usize) {
+        for _ in 0..n {
+            self.select_next();
+        }
+    }
+
     pub fn select_previous(&mut self) {
         match self.state.selected() {
             None => {
@@ -149,6 +155,12 @@ impl StatefulGraphemes {
                 }
                 self.state.select(Some(previous));
             }
+        }
+    }
+
+    pub fn select_previous_n(&mut self, n: usize) {
+        for _ in 0..n {
+            self.select_previous();
         }
     }
 }
@@ -223,6 +235,17 @@ mod tests {
     }
 
     #[test]
+    fn test_select_next_n() {
+        let mut graphemes = StatefulGraphemes::new(TEST_STR);
+
+        graphemes.select_next_n(2);
+        assert_eq!(graphemes.state.selected().unwrap(), 4);
+
+        graphemes.select_next_n(42);
+        assert_eq!(graphemes.state.selected().unwrap(), 11);
+    }
+
+    #[test]
     fn test_select_previous() {
         let mut graphemes = StatefulGraphemes::new(TEST_STR);
         graphemes.state.select(Some(11));
@@ -245,6 +268,18 @@ mod tests {
         assert_eq!(graphemes.state.selected().unwrap(), 0);
 
         graphemes.select_previous();
+        assert_eq!(graphemes.state.selected().unwrap(), 0);
+    }
+
+    #[test]
+    fn test_select_previous_n() {
+        let mut graphemes = StatefulGraphemes::new(TEST_STR);
+        graphemes.state.select(Some(11));
+
+        graphemes.select_previous_n(3);
+        assert_eq!(graphemes.state.selected().unwrap(), 5);
+
+        graphemes.select_previous_n(42);
         assert_eq!(graphemes.state.selected().unwrap(), 0);
     }
 }
