@@ -36,6 +36,8 @@ pub struct MainView {
     character_detail_view: Option<CharacterDetailView>,
 }
 
+const PAGE_CONTROL_STEP_SIZE: usize = 10;
+
 impl MainView {
     pub fn new(user_input: String) -> Self {
         let graphemes = StatefulGraphemes::new(&user_input);
@@ -157,8 +159,20 @@ impl MainView {
                     self.update_showing_detail(&app_state);
                 }
             }
+            KeyCode::PageUp => {
+                self.graphemes.select_previous_n(PAGE_CONTROL_STEP_SIZE);
+                if self.character_detail_view.is_some() {
+                    self.update_showing_detail(&app_state);
+                }
+            }
             KeyCode::Down => {
                 self.graphemes.select_next();
+                if self.character_detail_view.is_some() {
+                    self.update_showing_detail(&app_state);
+                }
+            }
+            KeyCode::PageDown => {
+                self.graphemes.select_next_n(PAGE_CONTROL_STEP_SIZE);
                 if self.character_detail_view.is_some() {
                     self.update_showing_detail(&app_state);
                 }
