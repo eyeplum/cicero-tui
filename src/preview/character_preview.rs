@@ -112,7 +112,7 @@ impl CharacterPreview {
 
     pub fn render(&self, size: RenderSize) -> Result<RenderedCharacter> {
         self.current_font
-            .set_pixel_sizes(size.width as u32, size.height as u32)?;
+            .set_pixel_sizes(size.width as u32, size.height as u32)?; // FIXME: This should not be used to constrain the size of the bitmap
         self.current_font
             .load_char(self.chr as usize, freetype::face::LoadFlag::RENDER)?;
 
