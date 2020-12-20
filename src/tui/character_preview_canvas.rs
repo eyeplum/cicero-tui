@@ -20,7 +20,7 @@ use tui::widgets::canvas::{Canvas, Painter, Shape};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 
 use super::main_view::TerminalFrame;
-use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter, Result};
+use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter};
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
 const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
@@ -28,13 +28,13 @@ const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
 const RENDER_PADDING_IN_CELLS: u16 = 4;
 
 pub struct CharacterPreviewCanvas {
-    character_preview: Result<CharacterPreview>,
+    character_preview: Option<CharacterPreview>,
 }
 
 impl CharacterPreviewCanvas {
     pub fn new(chr: char, preferred_font_path: Option<&String>) -> Self {
         CharacterPreviewCanvas {
-            character_preview: CharacterPreview::new(chr, preferred_font_path),
+            character_preview: CharacterPreview::new(chr, preferred_font_path).ok(),
         }
     }
 
@@ -59,17 +59,17 @@ impl CharacterPreviewCanvas {
 
     pub fn get_current_preview_font(&self) -> Option<String> {
         match &self.character_preview {
-            Ok(character_preview) => character_preview.get_current_font_path(),
-            Err(_) => None,
+            Some(character_preview) => character_preview.get_current_font_path(),
+            None => None,
         }
     }
 
     pub fn previous_preview_font(&mut self) {
         match &mut self.character_preview {
-            Ok(character_preview) => {
+            Some(character_preview) => {
                 let _ = character_preview.select_previous_font();
             }
-            Err(_) => {
+            None => {
                 // Do nothing
             }
         }
@@ -77,10 +77,10 @@ impl CharacterPreviewCanvas {
 
     pub fn next_preview_font(&mut self) {
         match &mut self.character_preview {
-            Ok(character_preview) => {
+            Some(character_preview) => {
                 let _ = character_preview.select_next_font();
             }
-            Err(_) => {
+            None => {
                 // Do nothing
             }
         }
@@ -105,7 +105,7 @@ impl CharacterPreviewCanvas {
             };
 
             match &self.character_preview {
-                Ok(character_preview) => match character_preview.render(render_pixel_size) {
+                Some(character_preview) => match character_preview.render(render_pixel_size) {
                     Ok(rendered_character) => {
                         let glyph_size = rendered_character.glyph_size;
                         let x_padding = (canvas_pixel_size.width - glyph_size.width) / 2;
@@ -126,7 +126,7 @@ impl CharacterPreviewCanvas {
                         })
                     }
                 },
-                Err(_) => {
+                None => {
                     let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
                     let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
                     ctx.draw(&ToufuShape {
@@ -156,7 +156,7 @@ impl CharacterPreviewCanvas {
             .split(rect);
 
         match &self.character_preview {
-            Ok(character_preview) => {
+            Some(character_preview) => {
                 if character_preview.has_previous_font() {
                     let help_item = [Text::raw("[\u{2190}]: Prev. Font")];
                     let help_text = Paragraph::new(help_item.iter())
@@ -180,7 +180,7 @@ impl CharacterPreviewCanvas {
                     frame.render_widget(help_text, chunks[2]);
                 }
             }
-            Err(_) => {
+            None => {
                 let help_item = [Text::raw("Preview Not Available")];
                 let help_text = Paragraph::new(help_item.iter())
                     .style(Style::default().fg(Color::LightGreen))
