@@ -84,10 +84,7 @@ impl CharacterPreview {
 
     pub fn select_previous_font(&mut self) -> Result<()> {
         self.paths_for_matching_fonts.select_previous();
-        self.current_font = match self.paths_for_matching_fonts.current_item() {
-            Some(current_font_path) => self.library.new_face(current_font_path, 0)?,
-            None => return Err(Box::new(Error::GlyphNotFound { chr: self.chr })),
-        };
+        self.current_font = self.get_current_font()?;
         Ok(())
     }
 
@@ -97,10 +94,7 @@ impl CharacterPreview {
 
     pub fn select_next_font(&mut self) -> Result<()> {
         self.paths_for_matching_fonts.select_next();
-        self.current_font = match self.paths_for_matching_fonts.current_item() {
-            Some(current_font_path) => self.library.new_face(current_font_path, 0)?,
-            None => return Err(Box::new(Error::GlyphNotFound { chr: self.chr })),
-        };
+        self.current_font = self.get_current_font()?;
         Ok(())
     }
 
@@ -141,5 +135,13 @@ impl CharacterPreview {
         };
 
         Ok(RenderedCharacter { bitmap, glyph_size })
+    }
+
+    fn get_current_font(&self) -> Result<Face> {
+        let font_path = self
+            .get_current_font_path()
+            .ok_or(Error::GlyphNotFound { chr: self.chr })?;
+        let font = self.library.new_face(font_path, 0)?;
+        Ok(font)
     }
 }
