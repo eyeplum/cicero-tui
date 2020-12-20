@@ -77,7 +77,7 @@ impl PropertyRow {
                 "Block",
                 character_properties
                     .block_name
-                    .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT)
+                    .unwrap_or(NOT_AVAILABLE_DISPLAY_TEXT)
                     .to_owned(),
             ),
             PropertyRow::new(
@@ -174,7 +174,7 @@ impl PropertyRow {
             "Mandarin",
             character_properties
                 .mandarin
-                .unwrap_or_else(|| NOT_AVAILABLE_DISPLAY_TEXT)
+                .unwrap_or(NOT_AVAILABLE_DISPLAY_TEXT)
                 .to_owned(),
         ));
         property_rows.push(PropertyRow::from_optional_character(

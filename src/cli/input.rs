@@ -64,9 +64,7 @@ impl ToString for Input {
 }
 
 pub fn parse_input(args: &ArgMatches) -> Result<Input> {
-    let input_string = args
-        .value_of(ARGUMENT_VALUE_NAME_INPUT)
-        .unwrap_or_else(|| ""); // No input is provided, fallback to an empty string
+    let input_string = args.value_of(ARGUMENT_VALUE_NAME_INPUT).unwrap_or(""); // No input is provided, fallback to an empty string
 
     match args.value_of(OPTION_NAME_INPUT_TYPE) {
         Some(input_type) => match input_type {
