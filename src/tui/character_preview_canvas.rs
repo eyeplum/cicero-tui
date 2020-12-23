@@ -108,8 +108,16 @@ impl CharacterPreviewCanvas {
                 Some(character_preview) => match character_preview.render(render_pixel_size) {
                     Ok(rendered_character) => {
                         let glyph_size = rendered_character.glyph_size;
-                        let x_padding = (canvas_pixel_size.width - glyph_size.width) / 2;
-                        let y_padding = (canvas_pixel_size.height - glyph_size.height) / 2;
+                        let x_padding = if glyph_size.width < canvas_pixel_size.width {
+                            (canvas_pixel_size.width - glyph_size.width) / 2
+                        } else {
+                            0
+                        };
+                        let y_padding = if glyph_size.height < canvas_pixel_size.height {
+                            (canvas_pixel_size.height - glyph_size.height) / 2
+                        } else {
+                            0
+                        };
                         ctx.draw(&CharacterPreviewShape {
                             rendered_character: &rendered_character,
                             x_padding,

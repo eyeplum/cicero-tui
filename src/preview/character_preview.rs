@@ -12,8 +12,6 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use std::cmp::min;
-
 use freetype::{Face, Library};
 
 use super::font_match::fonts_for;
@@ -110,28 +108,27 @@ impl CharacterPreview {
         format!("{} - {}", family_name, style_name)
     }
 
-    pub fn render(&self, size: RenderSize) -> Result<RenderedCharacter> {
+    pub fn render(&self, requested_size: RenderSize) -> Result<RenderedCharacter> {
         self.current_font
-            .set_pixel_sizes(size.width as u32, size.height as u32)?; // FIXME: This should not be used to constrain the size of the bitmap
+            .set_pixel_sizes(requested_size.width as u32, requested_size.height as u32)?;
         self.current_font
             .load_char(self.chr as usize, freetype::face::LoadFlag::RENDER)?;
 
         let (bitmap, glyph_size) = {
-            let mut pixels = vec![vec![0; size.width as usize]; size.height as usize];
-
             let glyph_bitmap = self.current_font.glyph().bitmap();
-            let x_max = min(size.width, glyph_bitmap.width() as usize);
-            let y_max = min(size.height, glyph_bitmap.rows() as usize);
-
             let glyph_bitmap_buffer = glyph_bitmap.buffer();
 
-            for x in 0..x_max {
-                for y in 0..y_max {
-                    pixels[y][x] = glyph_bitmap_buffer[y * x_max + x];
+            let row_width = glyph_bitmap.width() as usize;
+            let row_count = glyph_bitmap.rows() as usize;
+            let mut pixels = vec![vec![0; row_width]; row_count];
+
+            for x in 0..row_width {
+                for y in 0..row_count {
+                    pixels[y][x] = glyph_bitmap_buffer[y * row_width + x];
                 }
             }
 
-            (pixels, RenderSize::new(x_max, y_max))
+            (pixels, RenderSize::new(row_width, row_count))
         };
 
         Ok(RenderedCharacter { bitmap, glyph_size })
