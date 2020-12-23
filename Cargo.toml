@@ -1,6 +1,6 @@
 [package]
 name = "cicero"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2018"
 authors = ["Yan Li <eyeplum@gmail.com>"]
 license = "GPLv3"
