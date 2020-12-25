@@ -30,17 +30,22 @@ use std::fmt;
 
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
+    PreviewNotSupported, // Only used on Windows at the moment
     GlyphNotFound { chr: char },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Error::PreviewNotSupported => {
+                write!(f, "Character preview is not supported on this system")
+            }
             Error::GlyphNotFound { chr } => write!(
                 f,
-                "Glyph for U+{:04X} not found in all system fonts",
+                "Failed to find glyph for U+{:04X} in any fonts on this system",
                 *chr as u32
             ),
         }

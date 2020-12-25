@@ -12,18 +12,19 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use std::ffi;
-use std::ffi::CStr;
-use std::os::raw::c_char;
-use std::slice;
-
 use super::{Error, Result};
 
 cfg_if::cfg_if! {
 
 if #[cfg(unix)] {
 
+use std::ffi;
+use std::ffi::CStr;
+use std::os::raw::c_char;
+use std::slice;
+
 use fontconfig::fontconfig as fc;
+use scopeguard::defer;
 
 pub fn fonts_for(chr: char) -> Result<Vec<String>> {
     unsafe {
@@ -88,8 +89,8 @@ pub fn fonts_for(chr: char) -> Result<Vec<String>> {
 
 } else {
 
-pub fn fonts_for(chr: char) -> Result<Vec<String>> {
-    Ok(vec![])
+pub fn fonts_for(_chr: char) -> Result<Vec<String>> {
+    Err(Box::new(Error::PreviewNotSupported))
 }
 
 } // cfg(unix)

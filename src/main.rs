@@ -14,9 +14,6 @@
 
 #![warn(clippy::all)]
 
-#[macro_use(defer)]
-extern crate scopeguard;
-
 use clap::{crate_version, App, Arg, ArgMatches};
 use unic::ucd::version::UNICODE_VERSION;
 

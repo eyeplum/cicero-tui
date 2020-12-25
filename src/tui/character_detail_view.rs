@@ -19,38 +19,58 @@ use super::character_property_view::CharacterPropertyView;
 use super::main_view::TerminalFrame;
 
 pub struct CharacterDetailView {
-    character_preview_canvas: CharacterPreviewCanvas,
+    character_preview_canvas: Option<CharacterPreviewCanvas>,
     character_property_view: CharacterPropertyView,
 }
 
 impl CharacterDetailView {
     pub fn new(chr: char, preferred_preview_font_path: Option<&String>) -> Self {
         CharacterDetailView {
-            character_preview_canvas: CharacterPreviewCanvas::new(chr, preferred_preview_font_path),
+            character_preview_canvas: CharacterPreviewCanvas::try_new(
+                chr,
+                preferred_preview_font_path,
+            )
+            .ok(),
             character_property_view: CharacterPropertyView::new(chr),
         }
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
-        let chunks = Layout::default()
-            .constraints([Constraint::Length(20), Constraint::Min(10)].as_ref())
-            .direction(Direction::Vertical)
-            .split(rect);
+        match &mut self.character_preview_canvas {
+            Some(character_preview_canvas) => {
+                let chunks = Layout::default()
+                    .constraints([Constraint::Length(20), Constraint::Min(10)].as_ref())
+                    .direction(Direction::Vertical)
+                    .split(rect);
 
-        self.character_preview_canvas.draw(frame, chunks[0]);
-        self.character_property_view.draw(frame, chunks[1]);
+                character_preview_canvas.draw(frame, chunks[0]);
+                self.character_property_view.draw(frame, chunks[1]);
+            }
+            None => {
+                self.character_property_view.draw(frame, rect);
+            }
+        }
     }
 
     pub fn get_current_preview_font_path(&self) -> Option<String> {
-        self.character_preview_canvas.get_current_preview_font()
+        match &self.character_preview_canvas {
+            Some(character_preview_canvas) => character_preview_canvas.get_current_preview_font(),
+            None => None,
+        }
     }
 
     pub fn previous_preview_font(&mut self) {
-        self.character_preview_canvas.previous_preview_font();
+        match &mut self.character_preview_canvas {
+            Some(character_preview_canvas) => character_preview_canvas.previous_preview_font(),
+            None => {}
+        }
     }
 
     pub fn next_preview_font(&mut self) {
-        self.character_preview_canvas.next_preview_font();
+        match &mut self.character_preview_canvas {
+            Some(character_preview_canvas) => character_preview_canvas.next_preview_font(),
+            None => {}
+        }
     }
 
     pub fn scroll_down(&mut self) {

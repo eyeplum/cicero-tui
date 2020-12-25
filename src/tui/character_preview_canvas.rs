@@ -20,7 +20,7 @@ use tui::widgets::canvas::{Canvas, Painter, Shape};
 use tui::widgets::{Block, Borders, Paragraph, Text};
 
 use super::main_view::TerminalFrame;
-use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter};
+use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter, Result};
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
 const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
@@ -28,14 +28,13 @@ const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
 const RENDER_PADDING_IN_CELLS: u16 = 4;
 
 pub struct CharacterPreviewCanvas {
-    character_preview: Option<CharacterPreview>,
+    character_preview: CharacterPreview,
 }
 
 impl CharacterPreviewCanvas {
-    pub fn new(chr: char, preferred_font_path: Option<&String>) -> Self {
-        CharacterPreviewCanvas {
-            character_preview: CharacterPreview::new(chr, preferred_font_path).ok(),
-        }
+    pub fn try_new(chr: char, preferred_font_path: Option<&String>) -> Result<Self> {
+        let character_preview = CharacterPreview::new(chr, preferred_font_path)?;
+        Ok(CharacterPreviewCanvas { character_preview })
     }
 
     pub fn draw(&mut self, frame: &mut TerminalFrame, rect: Rect) {
@@ -58,32 +57,15 @@ impl CharacterPreviewCanvas {
     }
 
     pub fn get_current_preview_font(&self) -> Option<String> {
-        match &self.character_preview {
-            Some(character_preview) => character_preview.get_current_font_path(),
-            None => None,
-        }
+        self.character_preview.get_current_font_path()
     }
 
     pub fn previous_preview_font(&mut self) {
-        match &mut self.character_preview {
-            Some(character_preview) => {
-                let _ = character_preview.select_previous_font();
-            }
-            None => {
-                // Do nothing
-            }
-        }
+        let _ = self.character_preview.select_previous_font();
     }
 
     pub fn next_preview_font(&mut self) {
-        match &mut self.character_preview {
-            Some(character_preview) => {
-                let _ = character_preview.select_next_font();
-            }
-            None => {
-                // Do nothing
-            }
-        }
+        let _ = self.character_preview.select_next_font();
     }
 
     fn draw_character_preview(&mut self, frame: &mut TerminalFrame, rect: Rect) {
@@ -104,37 +86,26 @@ impl CharacterPreviewCanvas {
                 RenderSize::new(render_pixel_length as usize, render_pixel_length as usize)
             };
 
-            match &self.character_preview {
-                Some(character_preview) => match character_preview.render(render_pixel_size) {
-                    Ok(rendered_character) => {
-                        let glyph_size = rendered_character.glyph_size;
-                        let x_padding = if glyph_size.width < canvas_pixel_size.width {
-                            (canvas_pixel_size.width - glyph_size.width) / 2
-                        } else {
-                            0
-                        };
-                        let y_padding = if glyph_size.height < canvas_pixel_size.height {
-                            (canvas_pixel_size.height - glyph_size.height) / 2
-                        } else {
-                            0
-                        };
-                        ctx.draw(&CharacterPreviewShape {
-                            rendered_character: &rendered_character,
-                            x_padding,
-                            y_padding,
-                        })
-                    }
-                    Err(_) => {
-                        let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
-                        let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
-                        ctx.draw(&ToufuShape {
-                            size: render_pixel_size,
-                            x_padding,
-                            y_padding,
-                        })
-                    }
-                },
-                None => {
+            match self.character_preview.render(render_pixel_size) {
+                Ok(rendered_character) => {
+                    let glyph_size = rendered_character.glyph_size;
+                    let x_padding = if glyph_size.width < canvas_pixel_size.width {
+                        (canvas_pixel_size.width - glyph_size.width) / 2
+                    } else {
+                        0
+                    };
+                    let y_padding = if glyph_size.height < canvas_pixel_size.height {
+                        (canvas_pixel_size.height - glyph_size.height) / 2
+                    } else {
+                        0
+                    };
+                    ctx.draw(&CharacterPreviewShape {
+                        rendered_character: &rendered_character,
+                        x_padding,
+                        y_padding,
+                    })
+                }
+                Err(_) => {
                     let x_padding = (canvas_pixel_size.width - render_pixel_size.width) / 2;
                     let y_padding = (canvas_pixel_size.height - render_pixel_size.height) / 2;
                     ctx.draw(&ToufuShape {
@@ -143,7 +114,7 @@ impl CharacterPreviewCanvas {
                         y_padding,
                     })
                 }
-            };
+            }
         });
 
         frame.render_widget(canvas, rect);
@@ -163,38 +134,27 @@ impl CharacterPreviewCanvas {
             .direction(Direction::Horizontal)
             .split(rect);
 
-        match &self.character_preview {
-            Some(character_preview) => {
-                if character_preview.has_previous_font() {
-                    let help_item = [Text::raw("[\u{2190}]: Prev. Font")];
-                    let help_text = Paragraph::new(help_item.iter())
-                        .style(Style::default().fg(Color::LightGreen))
-                        .alignment(Alignment::Left);
-                    frame.render_widget(help_text, chunks[0]);
-                }
-                {
-                    let font_name = character_preview.get_current_font_display_name();
-                    let help_item = [Text::raw(font_name)];
-                    let help_text = Paragraph::new(help_item.iter())
-                        .style(Style::default())
-                        .alignment(Alignment::Center);
-                    frame.render_widget(help_text, chunks[1]);
-                }
-                if character_preview.has_next_font() {
-                    let help_item = [Text::raw("[\u{2192}]: Next Font")];
-                    let help_text = Paragraph::new(help_item.iter())
-                        .style(Style::default().fg(Color::LightGreen))
-                        .alignment(Alignment::Right);
-                    frame.render_widget(help_text, chunks[2]);
-                }
-            }
-            None => {
-                let help_item = [Text::raw("Preview Not Available")];
-                let help_text = Paragraph::new(help_item.iter())
-                    .style(Style::default().fg(Color::LightGreen))
-                    .alignment(Alignment::Center);
-                frame.render_widget(help_text, chunks[1]);
-            }
+        if self.character_preview.has_previous_font() {
+            let help_item = [Text::raw("[\u{2190}]: Prev. Font")];
+            let help_text = Paragraph::new(help_item.iter())
+                .style(Style::default().fg(Color::LightGreen))
+                .alignment(Alignment::Left);
+            frame.render_widget(help_text, chunks[0]);
+        }
+        {
+            let font_name = self.character_preview.get_current_font_display_name();
+            let help_item = [Text::raw(font_name)];
+            let help_text = Paragraph::new(help_item.iter())
+                .style(Style::default())
+                .alignment(Alignment::Center);
+            frame.render_widget(help_text, chunks[1]);
+        }
+        if self.character_preview.has_next_font() {
+            let help_item = [Text::raw("[\u{2192}]: Next Font")];
+            let help_text = Paragraph::new(help_item.iter())
+                .style(Style::default().fg(Color::LightGreen))
+                .alignment(Alignment::Right);
+            frame.render_widget(help_text, chunks[2]);
         }
     }
 
