@@ -68,9 +68,9 @@ You can also build Cicero from source.
 
 ### Supported Platforms
 
-Cicero is tested on GNU/Linux and macOS.
+Cicero is tested on GNU/Linux, macOS, and Windows.
 
-Building on Windows is not possible at the moment, but Windows Subsystem for Linux should work.
+**Note:** Character preview is not available on Windows at the moment (I haven't been able to find an alternative for `fontconfig` on Windows), though it should work on Windows Subsystem for Linux.
 
 ### Rust
 
