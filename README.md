@@ -4,6 +4,8 @@ Unicode tool with a terminal user interface.
 
 ![Screenshot](images/screenshot.png)
 
+![Build and Test](https://github.com/eyeplum/cicero-tui/workflows/Build%20and%20Test/badge.svg)
+
 ## Usage
 
 ```
