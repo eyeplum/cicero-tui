@@ -17,9 +17,13 @@ use std::ffi::CStr;
 use std::os::raw::c_char;
 use std::slice;
 
-use fontconfig::fontconfig as fc;
-
 use super::{Error, Result};
+
+cfg_if::cfg_if! {
+
+if #[cfg(unix)] {
+
+use fontconfig::fontconfig as fc;
 
 pub fn fonts_for(chr: char) -> Result<Vec<String>> {
     unsafe {
@@ -81,3 +85,13 @@ pub fn fonts_for(chr: char) -> Result<Vec<String>> {
         Ok(font_paths)
     }
 }
+
+} else {
+
+pub fn fonts_for(chr: char) -> Result<Vec<String>> {
+    Ok(vec![])
+}
+
+} // cfg(unix)
+
+} // cfg_if!
