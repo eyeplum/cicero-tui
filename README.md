@@ -1,10 +1,8 @@
-# cicero
+# cicero [![Build and Test](https://github.com/eyeplum/cicero-tui/workflows/Build%20and%20Test/badge.svg)](https://github.com/eyeplum/cicero-tui/actions?query=workflow%3A%22Build+and+Test%22)
 
 Unicode tool with a terminal user interface.
 
 ![Screenshot](images/screenshot.png)
-
-![Build and Test](https://github.com/eyeplum/cicero-tui/workflows/Build%20and%20Test/badge.svg)
 
 ## Usage
 
