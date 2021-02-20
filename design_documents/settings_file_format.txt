@@ -1,0 +1,73 @@
+SCHEMA
+=============================
+settings:
+	use_fontconfig: bool
+	font_search_paths: Array<FilePath>
+	preview_fonts: Array<PreviewFontSetting>
+
+PreviewFontSetting:
+	code_point_range: Option<CodePointRange>
+	font: Font
+
+enum CodePointRange {
+	Raw(first: U+10FFFF, last: U+10FFFF)
+	Plane(name: String)
+	Block(name: String)
+}
+
+enum Font {
+	File(FilePath)
+	Name(postscript_name: String)
+}
+
+
+EXAMPLE JSON
+==============================
+# ~/.config/cicero/settings.json
+
+{
+	"use_fontconfig" : false,
+	"font_search_paths" : [
+		"C:\Windows\Fonts\",
+		"~/Downloads/"
+	],
+	"preview_fonts" : [
+		{
+			"font" : "C:\Windows\Fonts\arial.ttf",
+		},
+		{
+			"code_point_range" : "U+0020..U+00FF",
+			"font" : "JetBrainsMono-Regular"
+		}
+	]
+}
+
+
+EXAMPLE TOML
+==============================
+# ~/.config/cicero/settings.toml
+
+# Whether to use libfontconfig for font discovery
+use_fontconfig = false
+
+# Path for searching for fonts
+# If use_fontconfig is set to true, the final font list will be a union of fonts found by both
+font_search_paths = [
+	"C:\Windows\Fonts\",
+	"~/Downloads/",
+]
+
+[[preview_fonts]]
+font = "~/Downloads/JetBrainsMono-Regular.ttf"
+
+[[preview_fonts]]
+code_point_range = "U+0020..U+00FF"
+font = "JetBrainsMono-Regular"
+
+[[preview_fonts]]
+code_point_range = "Basic Latin"
+font = "HelveticaNeue"
+
+[[preview_fonts]]
+code_point_range = "Basic Multilingual Plane"
+font = "C:\Windows\Fonts\arial.ttf"
