@@ -1,0 +1,17 @@
+use_fontconfig = true
+font_search_paths = ["/test/path/fonts", "/test/path/fonts2"]
+
+[[preview_fonts]]
+font_name = "TestFontName-Regular"
+
+[[preview_fonts]]
+code_point_range = "U+0020..U+00FF"
+font_name = "TestFontName-Regular"
+
+[[preview_fonts]]
+code_point_range = "Basic Latin"
+font_name = "TestFontName-Regular"
+
+[[preview_fonts]]
+code_point_range = "Basic Multilingual Plane"
+font_name = "TestFontName-Regular"

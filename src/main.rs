@@ -19,6 +19,7 @@ use unic::ucd::version::UNICODE_VERSION;
 
 mod cli;
 mod preview;
+mod settings;
 mod tui;
 mod ucd;
 
