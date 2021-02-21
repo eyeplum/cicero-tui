@@ -20,7 +20,7 @@ use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Block, Borders, List, ListState, Text};
 
 use super::main_view::TerminalFrame;
-use crate::ucd::{code_point_description, CharacterProperties};
+use crate::ucd::{code_point_to_string, CharacterProperties};
 
 const NOT_AVAILABLE_DISPLAY_TEXT: &str = "N/A";
 
@@ -59,7 +59,7 @@ impl PropertyRow {
         let mut property_rows = vec![
             PropertyRow::new(
                 "Code Point",
-                code_point_description(character_properties.character),
+                code_point_to_string(character_properties.character),
             ),
             PropertyRow::new("Name", character_properties.name.clone()),
             PropertyRow::new(
@@ -244,7 +244,7 @@ impl PropertyRow {
     }
 
     fn from_character(title: &'static str, chr: char) -> Self {
-        PropertyRow::new(title, format!("{} {}", code_point_description(chr), chr))
+        PropertyRow::new(title, format!("{} {}", code_point_to_string(chr), chr))
     }
 
     fn from_optional_character(title: &'static str, optional_chr: Option<char>) -> Self {
@@ -318,8 +318,7 @@ impl CharacterPropertyView {
 
         // Draw borders
         {
-            let code_point_description =
-                code_point_description(self.character_properties.character);
+            let code_point_description = code_point_to_string(self.character_properties.character);
             let block = Block::default()
                 .borders(Borders::ALL)
                 .title(&code_point_description);

@@ -43,6 +43,10 @@ pub struct Plane {
 }
 
 impl Plane {
+    pub fn all_plane_names() -> &'static [&'static str] {
+        PLANE_NAMES
+    }
+
     pub fn of(chr: char) -> Self {
         assert_eq!(PLANE_NAMES.len(), PLANE_COUNT as usize);
 

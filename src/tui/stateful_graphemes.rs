@@ -19,7 +19,7 @@ use tui::widgets::ListState;
 use unic::segment::Graphemes;
 use unic::ucd::name::Name;
 
-use crate::ucd::code_point_description;
+use crate::ucd::code_point_to_string;
 
 #[derive(Default)]
 pub struct GraphemeRow {
@@ -39,7 +39,7 @@ impl fmt::Display for GraphemeRow {
         match self.code_point {
             None => write!(f, ""),
             Some(chr) => {
-                let code_point_str = code_point_description(chr);
+                let code_point_str = code_point_to_string(chr);
                 let name = match Name::of(chr) {
                     None => "".to_owned(),
                     Some(name) => name.to_string(),
