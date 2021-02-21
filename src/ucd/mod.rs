@@ -33,6 +33,46 @@ pub struct Range {
     end: u32,
 }
 
-pub fn code_point_description(chr: char) -> String {
+pub fn code_point_to_string(chr: char) -> String {
     format!("U+{:04X}", chr as u32)
+}
+
+pub fn string_to_code_point(input: &str) -> Option<char> {
+    if !input.to_lowercase().starts_with("u+") || input[2..].is_empty() {
+        return None;
+    }
+
+    use std::char;
+    match u32::from_str_radix(&input[2..], 16) {
+        Ok(code_point) => char::from_u32(code_point),
+        Err(_) => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_code_point_to_string() {
+        assert_eq!("U+0020", code_point_to_string('\u{0020}'));
+        assert_eq!("U+34FF", code_point_to_string('\u{34FF}'));
+        assert_eq!("U+10FFFF", code_point_to_string('\u{10FFFF}'));
+    }
+
+    #[test]
+    fn test_string_to_code_point() {
+        assert_eq!(Some('\u{0020}'), string_to_code_point("U+20"));
+        assert_eq!(Some('\u{0020}'), string_to_code_point("U+0020"));
+        assert_eq!(Some('\u{34FF}'), string_to_code_point("U+34FF"));
+        assert_eq!(Some('\u{10FFFF}'), string_to_code_point("U+10FFFF"));
+
+        assert_eq!(Some('\u{0020}'), string_to_code_point("u+20"));
+        assert_eq!(Some('\u{0020}'), string_to_code_point("u+0020"));
+        assert_eq!(Some('\u{34ff}'), string_to_code_point("u+34ff"));
+        assert_eq!(Some('\u{10ffff}'), string_to_code_point("u+10ffff"));
+
+        assert_eq!(None, string_to_code_point("Invalid"));
+        assert_eq!(None, string_to_code_point("U+11FFFF"));
+    }
 }

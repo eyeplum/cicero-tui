@@ -26,7 +26,7 @@ use unic::ucd::{
 
 use std::fmt;
 
-use super::{code_point_description, Plane};
+use super::{code_point_to_string, Plane};
 
 const TREE_GRAPH_EDGE: &str = "├── ";
 const TREE_GRAPH_CORNER: &str = "└── ";
@@ -203,7 +203,7 @@ impl fmt::Display for CharacterProperties {
         writeln!(
             f,
             "{} (utf-16:{:#06x} utf-8:{:#04x})  {}  {}",
-            code_point_description(self.character),
+            code_point_to_string(self.character),
             self.utf16.as_hex(),
             self.utf8.as_hex(),
             self.character,

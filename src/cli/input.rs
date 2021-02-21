@@ -17,6 +17,7 @@ use std::char;
 use clap::ArgMatches;
 
 use super::{Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE};
+use crate::ucd::string_to_code_point;
 
 pub const OPTION_NAME_INPUT_TYPE: &str = "input_type";
 pub const OPTION_VALUE_INPUT_TYPE_STRING: &str = "string";
@@ -27,15 +28,7 @@ pub const ARGUMENT_VALUE_NAME_INPUT: &str = "INPUT";
 fn characters_from_input_string(input_string: &str) -> Vec<char> {
     input_string
         .split(',')
-        .map(|component| {
-            if !component.to_lowercase().starts_with("u+") || component[2..].is_empty() {
-                return None;
-            }
-            match u32::from_str_radix(&component[2..], 16) {
-                Ok(code_point) => char::from_u32(code_point),
-                Err(_) => None,
-            }
-        })
+        .map(string_to_code_point)
         .filter(Option::is_some)
         .map(Option::unwrap)
         .collect()
