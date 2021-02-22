@@ -26,10 +26,13 @@ mod stateful_graphemes;
 pub use main_view::MainView;
 pub use renderer::Renderer;
 
+use crate::settings::{get_settings, Settings};
+
 #[derive(Debug)]
 pub struct ApplicationState {
     pub keep_running: bool,
     pub preferred_font_path: Option<String>,
+    pub settings: Settings,
 }
 
 impl Default for ApplicationState {
@@ -37,6 +40,7 @@ impl Default for ApplicationState {
         ApplicationState {
             keep_running: true,
             preferred_font_path: None,
+            settings: get_settings(),
         }
     }
 }
