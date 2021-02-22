@@ -15,6 +15,7 @@ categories = ["command-line-utilities"]
 cfg-if = "1.0"
 clap = "2.33"
 crossterm = "0.17"
+dirs = "3.0.1"
 freetype-rs = "0.25"
 hex-slice = "0.1"
 scopeguard = "1.1"
