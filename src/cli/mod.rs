@@ -61,3 +61,64 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {}
+
+#[macro_export]
+macro_rules! create_cli {
+    () => {
+        App::new("Cicero: A Unicode Tool")
+            .version(&*format!(
+                "{} (Unicode Version {})",
+                crate_version!(),
+                UNICODE_VERSION
+            ))
+            .arg(
+                Arg::with_name(cli::FLAG_NAME_TUI_MODE)
+                    .short("t")
+                    .long("tui")
+                    .help("Shows Terminal UI"),
+            )
+            .arg(
+                Arg::with_name(cli::FLAG_NAME_CODE_POINT_INPUT_MODE)
+                    .short("u")
+                    .help(&format!(
+                        "Parses {} as comma separated code points,\n\
+                     same as '--input-type={}',\n\
+                     ignored if '--input-type' is specified",
+                        cli::ARGUMENT_VALUE_NAME_INPUT,
+                        cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
+                    )),
+            )
+            .arg(
+                Arg::with_name(cli::OPTION_NAME_OUTPUT_FORMAT)
+                    .short("o")
+                    .long("output-format")
+                    .takes_value(true)
+                    .value_name("FORMAT")
+                    .help(&format!(
+                        "Specifies output format, '{}' by default,\n\
+                     valid values: {}, {}",
+                        cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
+                        cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
+                        cli::OPTION_VALUE_OUTPUT_FORMAT_JSON,
+                    )),
+            )
+            .arg(
+                Arg::with_name(cli::OPTION_NAME_INPUT_TYPE)
+                    .short("i")
+                    .long("input-type")
+                    .takes_value(true)
+                    .value_name("TYPE")
+                    .help(&format!(
+                        "Specifies input type, '{}' by default,\n\
+                     valid values: {}, {}",
+                        cli::OPTION_VALUE_INPUT_TYPE_STRING,
+                        cli::OPTION_VALUE_INPUT_TYPE_STRING,
+                        cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
+                    )),
+            )
+            .arg(
+                Arg::with_name(cli::ARGUMENT_VALUE_NAME_INPUT)
+                    .help("a string or comma separated code points"),
+            )
+    };
+}
