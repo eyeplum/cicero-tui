@@ -25,9 +25,11 @@ mod ucd;
 
 use cli::Result;
 
-fn run_tui(user_input: String) -> Result<()> {
+fn run_tui(args: ArgMatches) -> Result<()> {
     let mut state = tui::ApplicationState::default();
-    let mut main_view = tui::MainView::new(user_input);
+
+    let user_input = cli::parse_input(&args)?;
+    let mut main_view = tui::MainView::new(user_input.to_string());
 
     let renderer = tui::Renderer::new();
     match renderer.run(|terminal| {
@@ -45,66 +47,9 @@ fn run_cli(args: ArgMatches) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let args = App::new("Cicero: A Unicode Tool")
-        .version(&*format!(
-            "{} (Unicode Version {})",
-            crate_version!(),
-            UNICODE_VERSION
-        ))
-        .arg(
-            Arg::with_name(cli::FLAG_NAME_TUI_MODE)
-                .short("t")
-                .long("tui")
-                .help("Shows Terminal UI"),
-        )
-        .arg(
-            Arg::with_name(cli::FLAG_NAME_CODE_POINT_INPUT_MODE)
-                .short("u")
-                .help(&format!(
-                    "Parses {} as comma separated code points,\n\
-                     same as '--input-type={}',\n\
-                     ignored if '--input-type' is specified",
-                    cli::ARGUMENT_VALUE_NAME_INPUT,
-                    cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
-                )),
-        )
-        .arg(
-            Arg::with_name(cli::OPTION_NAME_OUTPUT_FORMAT)
-                .short("o")
-                .long("output-format")
-                .takes_value(true)
-                .value_name("FORMAT")
-                .help(&format!(
-                    "Specifies output format, '{}' by default,\n\
-                     valid values: {}, {}",
-                    cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
-                    cli::OPTION_VALUE_OUTPUT_FORMAT_TEXT,
-                    cli::OPTION_VALUE_OUTPUT_FORMAT_JSON,
-                )),
-        )
-        .arg(
-            Arg::with_name(cli::OPTION_NAME_INPUT_TYPE)
-                .short("i")
-                .long("input-type")
-                .takes_value(true)
-                .value_name("TYPE")
-                .help(&format!(
-                    "Specifies input type, '{}' by default,\n\
-                     valid values: {}, {}",
-                    cli::OPTION_VALUE_INPUT_TYPE_STRING,
-                    cli::OPTION_VALUE_INPUT_TYPE_STRING,
-                    cli::OPTION_VALUE_INPUT_TYPE_CODE_POINTS,
-                )),
-        )
-        .arg(
-            Arg::with_name(cli::ARGUMENT_VALUE_NAME_INPUT)
-                .help("a string or comma separated code points"),
-        )
-        .get_matches();
-
+    let args = create_cli!().get_matches();
     if args.is_present(cli::FLAG_NAME_TUI_MODE) {
-        let user_input = cli::parse_input(&args)?;
-        run_tui(user_input.to_string())
+        run_tui(args)
     } else {
         run_cli(args)
     }
