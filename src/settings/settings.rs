@@ -24,7 +24,7 @@ use crate::ucd::{code_point_to_string, string_to_code_point, Plane};
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
-    pub use_fontconfig: bool,
+    pub use_fontconfig: Option<bool>,
     pub font_search_paths: Option<Vec<PathBuf>>,
     pub preview_fonts: Option<Vec<PreviewFontSetting>>,
 }
@@ -32,7 +32,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
-            use_fontconfig: true,
+            use_fontconfig: Some(true),
             font_search_paths: None,
             preview_fonts: None,
         }
@@ -162,39 +162,7 @@ mod tests {
     const TEST_SETTINGS_TOML_STRING: &str = include_str!("test_resources/test_settings.toml");
 
     fn get_test_settings() -> Settings {
-        // NB: This definition of Settings must be equivalent to the TOML file in the test resource
-        Settings {
-            use_fontconfig: true,
-            font_search_paths: Some(vec![
-                PathBuf::from("/test/path/fonts"),
-                PathBuf::from("/test/path/fonts2"),
-            ]),
-            preview_fonts: Some(vec![
-                PreviewFontSetting {
-                    code_point_range: None,
-                    font_name: "TestFontName-Regular".to_owned(),
-                },
-                PreviewFontSetting {
-                    code_point_range: Some(CodePointRange::Raw {
-                        first: '\u{0020}',
-                        last: '\u{00FF}',
-                    }),
-                    font_name: "TestFontName-Regular".to_owned(),
-                },
-                PreviewFontSetting {
-                    code_point_range: Some(CodePointRange::Block {
-                        name: "Basic Latin".to_owned(),
-                    }),
-                    font_name: "TestFontName-Regular".to_owned(),
-                },
-                PreviewFontSetting {
-                    code_point_range: Some(CodePointRange::Plane {
-                        name: "Basic Multilingual Plane".to_owned(),
-                    }),
-                    font_name: "TestFontName-Regular".to_owned(),
-                },
-            ]),
-        }
+        include!("test_resources/test_settings.rsi")
     }
 
     fn sanitize_line_breaks(input: &str) -> String {
