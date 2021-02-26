@@ -14,19 +14,16 @@
 
 use super::{Error, Result};
 
-cfg_if::cfg_if! {
-
-if #[cfg(unix)] {
-
-use std::ffi;
-use std::ffi::CStr;
-use std::os::raw::c_char;
-use std::slice;
-
-use fontconfig::fontconfig as fc;
-use scopeguard::defer;
-
+#[cfg(target_family = "unix")]
 pub fn fonts_for(chr: char) -> Result<Vec<String>> {
+    use std::ffi;
+    use std::ffi::CStr;
+    use std::os::raw::c_char;
+    use std::slice;
+
+    use fontconfig::fontconfig as fc;
+    use scopeguard::defer;
+
     unsafe {
         let char_set = fc::FcCharSetCreate();
         defer! {
@@ -87,12 +84,7 @@ pub fn fonts_for(chr: char) -> Result<Vec<String>> {
     }
 }
 
-} else {
-
+#[cfg(target_family = "windows")]
 pub fn fonts_for(_chr: char) -> Result<Vec<String>> {
     Err(Box::new(Error::PreviewNotSupported))
 }
-
-} // cfg(unix)
-
-} // cfg_if!

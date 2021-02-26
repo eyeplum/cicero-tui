@@ -24,7 +24,9 @@ use crate::ucd::{code_point_to_string, string_to_code_point, Plane};
 
 #[derive(Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Settings {
+    #[cfg(target_family = "unix")]
     pub use_fontconfig: Option<bool>,
+
     pub font_search_paths: Option<Vec<PathBuf>>,
     pub preview_fonts: Option<Vec<PreviewFontSetting>>,
 }
@@ -32,7 +34,9 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Settings {
+            #[cfg(target_family = "unix")]
             use_fontconfig: Some(true),
+
             font_search_paths: None,
             preview_fonts: None,
         }
@@ -159,10 +163,55 @@ impl<'de> Deserialize<'de> for CodePointRange {
 mod tests {
     use super::*;
 
-    const TEST_SETTINGS_TOML_STRING: &str = include_str!("test_resources/test_settings.toml");
+    #[cfg(target_family = "unix")]
+    const TEST_SETTINGS_TOML_STRING: &str = include_str!("test_resources/test_settings_unix.toml");
+
+    #[cfg(not(target_family = "unix"))]
+    const TEST_SETTINGS_TOML_STRING: &str = include_str!("test_resources/test_settings_win.toml");
 
     fn get_test_settings() -> Settings {
-        include!("test_resources/test_settings.rsi")
+        Settings {
+            #[cfg(target_family = "unix")]
+            use_fontconfig: Some(true),
+
+            #[cfg(target_family = "unix")]
+            font_search_paths: Some(vec![
+                PathBuf::from("/test/path/fonts"),
+                PathBuf::from("/test/path/fonts2"),
+            ]),
+
+            #[cfg(target_family = "windows")]
+            font_search_paths: Some(vec![
+                PathBuf::from("C:\\test\\windows\\path"),
+                PathBuf::from("C:\\test\\windows\\path2"),
+            ]),
+
+            preview_fonts: Some(vec![
+                PreviewFontSetting {
+                    code_point_range: None,
+                    font_name: "TestFontName-Regular".to_owned(),
+                },
+                PreviewFontSetting {
+                    code_point_range: Some(CodePointRange::Raw {
+                        first: '\u{0020}',
+                        last: '\u{00FF}',
+                    }),
+                    font_name: "TestFontName-Regular".to_owned(),
+                },
+                PreviewFontSetting {
+                    code_point_range: Some(CodePointRange::Block {
+                        name: "Basic Latin".to_owned(),
+                    }),
+                    font_name: "TestFontName-Regular".to_owned(),
+                },
+                PreviewFontSetting {
+                    code_point_range: Some(CodePointRange::Plane {
+                        name: "Basic Multilingual Plane".to_owned(),
+                    }),
+                    font_name: "TestFontName-Regular".to_owned(),
+                },
+            ]),
+        }
     }
 
     fn sanitize_line_breaks(input: &str) -> String {
@@ -183,5 +232,16 @@ mod tests {
         let deserialized_settings: Settings =
             toml::from_str(&sanitize_line_breaks(TEST_SETTINGS_TOML_STRING)).unwrap();
         assert_eq!(deserialized_settings, get_test_settings());
+    }
+
+    #[cfg(not(target_family = "unix"))]
+    #[test]
+    fn test_use_fontconfig_is_ignored_for_non_unix_targets() {
+        // Use test toml for unix so that it contains the "use_fontconfig" entry
+        let toml_string = include_str!("test_resources/test_settings_unix.toml");
+        let deserialized_settings: Settings =
+            toml::from_str(&sanitize_line_breaks(toml_string)).unwrap();
+        assert!(deserialized_settings.font_search_paths.is_some());
+        assert!(deserialized_settings.preview_fonts.is_some());
     }
 }
