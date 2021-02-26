@@ -1,5 +1,4 @@
-use_fontconfig = true
-font_search_paths = ["/test/path/fonts", "C:\\test\\windows\\path"]
+font_search_paths = ["C:\\test\\windows\\path", "C:\\test\\windows\\path2"]
 
 [[preview_fonts]]
 font_name = "TestFontName-Regular"
