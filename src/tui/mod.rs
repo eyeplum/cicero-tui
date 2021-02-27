@@ -24,7 +24,7 @@ mod renderer;
 mod stateful_graphemes;
 
 pub use main_view::MainView;
-pub use renderer::Renderer;
+pub use renderer::run;
 
 use crate::settings::{get_settings, Settings};
 
