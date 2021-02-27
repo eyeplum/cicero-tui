@@ -223,9 +223,9 @@ dependencies = [
 
 [[package]]
 name = "freetype-rs"
-version = "0.25.0"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e687cf953d7052be94742baf3fc63b1ea21ada7d9b45f7b1918221accebf1ae"
+checksum = "74eadec9d0a5c28c54bb9882e54787275152a4e36ce206b45d7451384e5bf5fb"
 dependencies = [
  "bitflags",
  "freetype-sys",
@@ -234,9 +234,9 @@ dependencies = [
 
 [[package]]
 name = "freetype-sys"
-version = "0.12.0"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7530337a8e76db5271f1b5f81dd5340b0adaea235cb089cefa1928bd0cb9ee71"
+checksum = "a37d4011c0cc628dfa766fcc195454f4b068d7afdc2adfd28861191d866e731a"
 dependencies = [
  "cmake",
  "libc",
@@ -565,9 +565,9 @@ dependencies = [
 
 [[package]]
 name = "servo-fontconfig-sys"
-version = "5.0.2"
+version = "5.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "facb23c6a801c935c3bddfdd7dc4e823af853babc5b0c90ffa3419ebef5d92c7"
+checksum = "e36b879db9892dfa40f95da1c38a835d41634b825fbd8c4c418093d53c24b388"
 dependencies = [
  "expat-sys",
  "freetype-sys",
