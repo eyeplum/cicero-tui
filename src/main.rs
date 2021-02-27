@@ -27,15 +27,14 @@ use cli::Result;
 
 fn run_tui(args: ArgMatches) -> Result<()> {
     let mut state = tui::ApplicationState::default();
+    let mut main_view = tui::MainView::new(cli::parse_input(&args)?.to_string());
 
-    let user_input = cli::parse_input(&args)?;
-    let mut main_view = tui::MainView::new(user_input.to_string());
-
-    let renderer = tui::Renderer::new();
-    match renderer.run(|terminal| {
+    let run_result = tui::run(|terminal| {
         main_view.update(terminal, &mut state)?;
         Ok(state.keep_running)
-    }) {
+    });
+
+    match run_result {
         Ok(()) => Ok(()),
         Err(error) => Err(Box::new(error)),
     }
