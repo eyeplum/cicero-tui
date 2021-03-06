@@ -228,6 +228,7 @@ impl MainView {
                 self.character_detail_view = Some(CharacterDetailView::new(
                     chr,
                     app_state.selected_font_path.as_ref(),
+                    &app_state.settings,
                 ));
             }
         }

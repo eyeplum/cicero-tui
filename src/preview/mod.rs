@@ -33,16 +33,17 @@ pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
-    PreviewNotSupported, // Only used on Windows at the moment
+    MissingFontSearchPath,
     GlyphNotFound { chr: char },
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::PreviewNotSupported => {
-                write!(f, "Character preview is not supported on this system")
-            }
+            Error::MissingFontSearchPath => write!(
+                f,
+                "Failed to preview characters, no font search path is provided"
+            ),
             Error::GlyphNotFound { chr } => write!(
                 f,
                 "Failed to find glyph for U+{:04X} in any fonts on this system",

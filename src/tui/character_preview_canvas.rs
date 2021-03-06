@@ -21,6 +21,7 @@ use tui::widgets::{Block, Borders, Paragraph, Text};
 
 use super::main_view::TerminalFrame;
 use crate::preview::{CharacterPreview, RenderSize, RenderedCharacter, Result};
+use crate::settings::Settings;
 
 const BRAILLE_PATTERN_DOTS_PER_CELL_HORIZONTAL: u16 = 2;
 const BRAILLE_PATTERN_DOTS_PER_CELL_VERTICAL: u16 = 4;
@@ -32,8 +33,12 @@ pub struct CharacterPreviewCanvas {
 }
 
 impl CharacterPreviewCanvas {
-    pub fn try_new(chr: char, selected_font_path: Option<&String>) -> Result<Self> {
-        let character_preview = CharacterPreview::new(chr, selected_font_path)?;
+    pub fn try_new(
+        chr: char,
+        selected_font_path: Option<&String>,
+        settings: &Settings,
+    ) -> Result<Self> {
+        let character_preview = CharacterPreview::new(chr, selected_font_path, settings)?;
         Ok(CharacterPreviewCanvas { character_preview })
     }
 
