@@ -32,8 +32,8 @@ pub struct CharacterPreviewCanvas {
 }
 
 impl CharacterPreviewCanvas {
-    pub fn try_new(chr: char, preferred_font_path: Option<&String>) -> Result<Self> {
-        let character_preview = CharacterPreview::new(chr, preferred_font_path)?;
+    pub fn try_new(chr: char, selected_font_path: Option<&String>) -> Result<Self> {
+        let character_preview = CharacterPreview::new(chr, selected_font_path)?;
         Ok(CharacterPreviewCanvas { character_preview })
     }
 

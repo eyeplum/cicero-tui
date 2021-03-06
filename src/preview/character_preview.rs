@@ -46,14 +46,14 @@ pub struct CharacterPreview {
 }
 
 impl CharacterPreview {
-    pub fn new(chr: char, preferred_font_path: Option<&String>) -> Result<CharacterPreview> {
+    pub fn new(chr: char, selected_font_path: Option<&String>) -> Result<CharacterPreview> {
         let font_paths = fonts_for(chr)?;
         if font_paths.is_empty() {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }
 
         let mut paths_for_matching_fonts = StatefulVec::new(font_paths, Some(0));
-        if let Some(font_path) = preferred_font_path {
+        if let Some(font_path) = selected_font_path {
             paths_for_matching_fonts.select_if_found(font_path);
         }
 
