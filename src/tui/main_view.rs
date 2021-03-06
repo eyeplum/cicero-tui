@@ -180,14 +180,14 @@ impl MainView {
             KeyCode::Left => {
                 if let Some(character_detail_view) = &mut self.character_detail_view {
                     character_detail_view.previous_preview_font();
-                    app_state.preferred_font_path =
+                    app_state.selected_font_path =
                         character_detail_view.get_current_preview_font_path()
                 }
             }
             KeyCode::Right => {
                 if let Some(character_detail_view) = &mut self.character_detail_view {
                     character_detail_view.next_preview_font();
-                    app_state.preferred_font_path =
+                    app_state.selected_font_path =
                         character_detail_view.get_current_preview_font_path()
                 }
             }
@@ -227,7 +227,7 @@ impl MainView {
             if let Some(chr) = self.graphemes.rows[selected_row_index].code_point {
                 self.character_detail_view = Some(CharacterDetailView::new(
                     chr,
-                    app_state.preferred_font_path.as_ref(),
+                    app_state.selected_font_path.as_ref(),
                 ));
             }
         }

@@ -24,11 +24,11 @@ pub struct CharacterDetailView {
 }
 
 impl CharacterDetailView {
-    pub fn new(chr: char, preferred_preview_font_path: Option<&String>) -> Self {
+    pub fn new(chr: char, selected_preview_font_path: Option<&String>) -> Self {
         CharacterDetailView {
             character_preview_canvas: CharacterPreviewCanvas::try_new(
                 chr,
-                preferred_preview_font_path,
+                selected_preview_font_path,
             )
             .ok(),
             character_property_view: CharacterPropertyView::new(chr),
