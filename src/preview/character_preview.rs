@@ -17,6 +17,7 @@ use freetype::{Face, Library};
 use super::font_match::fonts_for;
 use super::stateful_vec::StatefulVec;
 use super::{Error, Result};
+use crate::settings::Settings;
 
 #[derive(Debug, Copy, Clone)]
 pub struct RenderSize {
@@ -46,8 +47,12 @@ pub struct CharacterPreview {
 }
 
 impl CharacterPreview {
-    pub fn new(chr: char, selected_font_path: Option<&String>) -> Result<CharacterPreview> {
-        let font_paths = fonts_for(chr)?;
+    pub fn new(
+        chr: char,
+        selected_font_path: Option<&String>,
+        settings: &Settings,
+    ) -> Result<CharacterPreview> {
+        let font_paths = fonts_for(chr, settings)?;
         if font_paths.is_empty() {
             return Err(Box::new(Error::GlyphNotFound { chr }));
         }

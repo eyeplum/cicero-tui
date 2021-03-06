@@ -17,6 +17,7 @@ use tui::layout::{Constraint, Direction, Layout, Rect};
 use super::character_preview_canvas::CharacterPreviewCanvas;
 use super::character_property_view::CharacterPropertyView;
 use super::main_view::TerminalFrame;
+use crate::settings::Settings;
 
 pub struct CharacterDetailView {
     character_preview_canvas: Option<CharacterPreviewCanvas>,
@@ -24,11 +25,16 @@ pub struct CharacterDetailView {
 }
 
 impl CharacterDetailView {
-    pub fn new(chr: char, selected_preview_font_path: Option<&String>) -> Self {
+    pub fn new(
+        chr: char,
+        selected_preview_font_path: Option<&String>,
+        settings: &Settings,
+    ) -> Self {
         CharacterDetailView {
             character_preview_canvas: CharacterPreviewCanvas::try_new(
                 chr,
                 selected_preview_font_path,
+                settings,
             )
             .ok(),
             character_property_view: CharacterPropertyView::new(chr),
