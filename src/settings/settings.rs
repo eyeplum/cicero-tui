@@ -18,7 +18,7 @@ use std::path::PathBuf;
 
 use serde::de::Visitor;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use unic::ucd::BlockIter;
+use unic::ucd::{Block, BlockIter};
 
 use crate::ucd::{code_point_to_string, string_to_code_point, Plane};
 
@@ -40,6 +40,36 @@ impl Default for Settings {
             font_search_paths: None,
             preview_fonts: None,
         }
+    }
+}
+
+impl Settings {
+    pub fn get_preview_fonts_for(&self, chr: char) -> Vec<String> {
+        if self.preview_fonts.is_none() {
+            return Vec::default();
+        }
+        let preview_font_settings = self.preview_fonts.as_ref().unwrap();
+
+        let character_block = Block::of(chr);
+        let character_plane = Plane::of(chr);
+
+        preview_font_settings
+            .iter()
+            .filter(
+                |preview_font_setting| match &preview_font_setting.code_point_range {
+                    Some(code_point_range) => match code_point_range {
+                        CodePointRange::Raw { first, last } => *first <= chr && chr >= *last,
+                        CodePointRange::Plane { name } => name == character_plane.name,
+                        CodePointRange::Block { name } => match character_block {
+                            Some(block) => name == block.name,
+                            None => false,
+                        },
+                    },
+                    None => true,
+                },
+            )
+            .map(|filtered_font_setting| filtered_font_setting.font_name.clone())
+            .collect()
     }
 }
 
