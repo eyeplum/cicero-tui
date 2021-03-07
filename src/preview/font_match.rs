@@ -14,14 +14,15 @@
 
 use std::fs::read_dir;
 
-use freetype::Library;
+use freetype::{Face, Library};
 
 use super::{Error, Result};
 use crate::settings::Settings;
+use std::path::PathBuf;
 
 #[cfg(target_family = "unix")]
 pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
-    // TODO: call fonts_for_no_fontconfig if was set
+    // TODO: match fonts without fontconfig if it's disabled in the settings
 
     use std::ffi;
     use std::ffi::CStr;
@@ -93,66 +94,94 @@ pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
 
 #[cfg(target_family = "windows")]
 pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
-    fonts_for_no_fontconfig(chr, settings)
-}
-
-fn fonts_for_no_fontconfig(chr: char, settings: &Settings) -> Result<Vec<String>> {
     let font_search_paths = settings
         .font_search_paths
         .as_ref()
         .ok_or(Error::MissingFontSearchPath)?;
+    let library = Library::init()?;
+    let all_fonts = all_fonts_in_search_path(font_search_paths, &library);
 
-    let matched_fonts = {
-        let mut matched_fonts = vec![];
-
-        let library = Library::init()?;
-        for font_search_path in font_search_paths {
-            if !font_search_path.is_dir() {
-                // Ignore non-directory file paths
-                continue;
-            }
-
-            let read_dir_result = read_dir(font_search_path);
-            if read_dir_result.is_err() {
-                // Ignore errors when creating directory iterators
-                continue;
-            }
-            let dir_iter = read_dir_result.unwrap();
-
-            for dir_entry in dir_iter {
-                if dir_entry.is_err() {
-                    // Ignore dir iterating errors
-                    continue;
-                }
-                let entry = dir_entry.unwrap();
-
-                let new_face_result = library.new_face(entry.path(), 0);
-                if new_face_result.is_err() {
-                    // Ignore errors when parsing fonts
-                    continue;
-                }
-                let font_face = new_face_result.unwrap();
-
-                let glyph_index = font_face.get_char_index(chr as usize);
-                if glyph_index == 0 {
-                    // No glyph is found for the given character in this font face
-                    continue;
+    let specified_font_names = settings.get_preview_fonts_for(chr);
+    if specified_font_names.is_empty() {
+        Ok(all_fonts
+            .iter()
+            .map(|(font_path, _)| font_path.clone())
+            .collect())
+    } else {
+        Ok(all_fonts
+            .iter()
+            .filter(|(_, font_face)| {
+                let family_name = font_face.family_name();
+                if family_name.is_some() {
+                    let family_name = family_name.unwrap();
+                    if specified_font_names
+                        .iter()
+                        .any(|font_name| family_name.contains(font_name))
+                    {
+                        return true;
+                    }
                 }
 
-                let entry_path = entry.path();
-                let path_to_str_result = entry_path.to_str();
-                if path_to_str_result.is_none() {
-                    // Ignore file path encoding conversion error
-                    continue;
+                let postscript_name = font_face.postscript_name();
+                if postscript_name.is_some() {
+                    let postscript_name = postscript_name.unwrap();
+                    if specified_font_names
+                        .iter()
+                        .any(|font_name| postscript_name.contains(font_name))
+                    {
+                        return true;
+                    }
                 }
-                let font_path = path_to_str_result.unwrap();
 
-                // TODO: Do we have to do the copy?
-                matched_fonts.push(font_path.to_owned());
-            }
+                false
+            })
+            .map(|(font_path, _)| font_path.clone())
+            .collect())
+    }
+}
+
+fn all_fonts_in_search_path(
+    font_search_paths: &Vec<PathBuf>,
+    library: &Library,
+) -> Vec<(String, Face)> {
+    let mut fonts = vec![];
+
+    for font_search_path in font_search_paths {
+        if !font_search_path.is_dir() {
+            // Ignore non-directory file paths
+            continue;
         }
 
-        matched_fonts
-    };
-    Ok(matched_fonts)
+        let read_dir_result = read_dir(font_search_path);
+        if read_dir_result.is_err() {
+            // Ignore errors when creating directory iterators
+            continue;
+        }
+        let dir_iter = read_dir_result.unwrap();
+
+        for dir_entry in dir_iter {
+            if dir_entry.is_err() {
+                // Ignore dir iterating errors
+                continue;
+            }
+            let entry = dir_entry.unwrap();
+
+            let new_face_result = library.new_face(entry.path(), 0);
+            if new_face_result.is_err() {
+                // Ignore errors when parsing fonts
+                continue;
+            }
+            let font_face = new_face_result.unwrap();
+
+            let font_path = entry.path();
+            let font_path_str = font_path.to_str();
+            if font_path_str.is_none() {
+                // Ignore errors when converting file path to UTF-8 strings
+                continue;
+            }
+            fonts.push((font_path_str.unwrap().to_owned(), font_face));
+        }
+    }
+
+    fonts
 }
