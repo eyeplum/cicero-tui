@@ -22,8 +22,20 @@ use std::path::PathBuf;
 
 #[cfg(target_family = "unix")]
 pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
-    // TODO: match fonts without fontconfig if it's disabled in the settings
+    if settings.uses_fontconfig() {
+        match_fonts_for_character_fontconfig(chr)
+    } else {
+        match_fonts_for_character_no_fontconfig(chr, settings)
+    }
+}
 
+#[cfg(target_family = "windows")]
+pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
+    match_fonts_for_character_no_fontconfig(chr, settings)
+}
+
+#[cfg(target_family = "unix")]
+fn match_fonts_for_character_fontconfig(chr: char) -> Result<Vec<String>> {
     use std::ffi;
     use std::ffi::CStr;
     use std::os::raw::c_char;
@@ -92,8 +104,7 @@ pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
     }
 }
 
-#[cfg(target_family = "windows")]
-pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
+fn match_fonts_for_character_no_fontconfig(chr: char, settings: &Settings) -> Result<Vec<String>> {
     let font_search_paths = settings
         .font_search_paths
         .as_ref()
@@ -101,47 +112,22 @@ pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
     let library = Library::init()?;
     let all_fonts = all_fonts_in_search_path(font_search_paths, &library);
 
-    let specified_font_names = settings.get_preview_fonts_for(chr);
-    if specified_font_names.is_empty() {
+    let specified_preview_font_names = settings.get_preview_fonts_for(chr);
+    if specified_preview_font_names.is_empty() {
         Ok(all_fonts
             .iter()
             .map(|(font_path, _)| font_path.clone())
             .collect())
     } else {
-        Ok(all_fonts
-            .iter()
-            .filter(|(_, font_face)| {
-                let family_name = font_face.family_name();
-                if family_name.is_some() {
-                    let family_name = family_name.unwrap();
-                    if specified_font_names
-                        .iter()
-                        .any(|font_name| family_name.contains(font_name))
-                    {
-                        return true;
-                    }
-                }
-
-                let postscript_name = font_face.postscript_name();
-                if postscript_name.is_some() {
-                    let postscript_name = postscript_name.unwrap();
-                    if specified_font_names
-                        .iter()
-                        .any(|font_name| postscript_name.contains(font_name))
-                    {
-                        return true;
-                    }
-                }
-
-                false
-            })
-            .map(|(font_path, _)| font_path.clone())
-            .collect())
+        Ok(filter_fonts_with_preview_font_settings(
+            &all_fonts,
+            &specified_preview_font_names,
+        ))
     }
 }
 
 fn all_fonts_in_search_path(
-    font_search_paths: &Vec<PathBuf>,
+    font_search_paths: &[PathBuf],
     library: &Library,
 ) -> Vec<(String, Face)> {
     let mut fonts = vec![];
@@ -184,4 +170,37 @@ fn all_fonts_in_search_path(
     }
 
     fonts
+}
+
+fn filter_fonts_with_preview_font_settings(
+    all_available_fonts: &[(String, Face)],
+    specified_preview_font_names: &[String],
+) -> Vec<String> {
+    all_available_fonts
+        .iter()
+        .filter(|(_, font_face)| {
+            fn is_matching_name(name: Option<String>, acceptable_names: &[String]) -> bool {
+                match name {
+                    Some(name) => acceptable_names
+                        .iter()
+                        .any(|acceptable_name| name.contains(acceptable_name)),
+                    None => false,
+                }
+            }
+
+            let family_name = font_face.family_name();
+            if is_matching_name(family_name, specified_preview_font_names) {
+                return true;
+            }
+
+            let postscript_name = font_face.postscript_name();
+            if is_matching_name(postscript_name, specified_preview_font_names) {
+                return true;
+            }
+
+            // Neither family name nor postscript name matches
+            false
+        })
+        .map(|(font_path, _)| font_path.clone())
+        .collect()
 }
