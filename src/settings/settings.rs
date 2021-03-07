@@ -44,6 +44,13 @@ impl Default for Settings {
 }
 
 impl Settings {
+    pub fn uses_fontconfig(&self) -> bool {
+        match &self.use_fontconfig {
+            Some(use_fontconfig) => *use_fontconfig,
+            None => true, // If not set (e.g. in settings.toml) then 'true' by default
+        }
+    }
+
     pub fn get_preview_fonts_for(&self, chr: char) -> Vec<String> {
         if self.preview_fonts.is_none() {
             return Vec::default();
