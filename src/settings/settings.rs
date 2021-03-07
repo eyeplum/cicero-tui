@@ -44,6 +44,7 @@ impl Default for Settings {
 }
 
 impl Settings {
+    #[cfg(target_family = "unix")]
     pub fn uses_fontconfig(&self) -> bool {
         match &self.use_fontconfig {
             Some(use_fontconfig) => *use_fontconfig,
