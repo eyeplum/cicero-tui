@@ -12,13 +12,13 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
-use std::fs::read_dir;
+use std::path::PathBuf;
 
 use freetype::{Face, Library};
+use walkdir::WalkDir;
 
 use super::{Error, Result};
 use crate::settings::Settings;
-use std::path::PathBuf;
 
 #[cfg(target_family = "unix")]
 pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
@@ -138,20 +138,11 @@ fn all_fonts_in_search_path(
             continue;
         }
 
-        let read_dir_result = read_dir(font_search_path);
-        if read_dir_result.is_err() {
-            // Ignore errors when creating directory iterators
-            continue;
-        }
-        let dir_iter = read_dir_result.unwrap();
-
-        for dir_entry in dir_iter {
-            if dir_entry.is_err() {
-                // Ignore dir iterating errors
-                continue;
-            }
-            let entry = dir_entry.unwrap();
-
+        // Work the search path ignoring dir iterating errors
+        for entry in WalkDir::new(font_search_path)
+            .into_iter()
+            .filter_map(|entry_result| entry_result.ok())
+        {
             let new_face_result = library.new_face(entry.path(), 0);
             if new_face_result.is_err() {
                 // Ignore errors when parsing fonts
