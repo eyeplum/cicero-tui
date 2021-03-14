@@ -227,7 +227,7 @@ impl MainView {
             if let Some(chr) = self.graphemes.rows[selected_row_index].code_point {
                 self.character_detail_view = Some(CharacterDetailView::new(
                     chr,
-                    app_state.selected_font_path.as_ref(),
+                    &app_state.selected_font_path,
                     &app_state.settings,
                 ));
             }

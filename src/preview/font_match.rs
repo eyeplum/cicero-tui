@@ -14,186 +14,288 @@
 
 use std::path::PathBuf;
 
-use freetype::{Face, Library};
-use walkdir::WalkDir;
-
 use super::{Error, Result};
 use crate::settings::Settings;
 
-#[cfg(target_family = "unix")]
-pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
+#[derive(Clone)]
+pub struct FontDescriptor {
+    pub path: PathBuf,
+    pub family_name: String,
+    pub full_name: String,
+    _private: (), // Prevent construction of this struct
+}
+
+pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<FontDescriptor>> {
+    #[cfg(target_family = "unix")]
     if settings.uses_fontconfig() {
-        match_fonts_for_character_fontconfig(chr)
+        with_fontconfig::match_fonts_for_character(chr, settings)
     } else {
-        match_fonts_for_character_no_fontconfig(chr, settings)
+        no_fontconfig::match_fonts_for_character(chr, settings)
     }
-}
 
-#[cfg(target_family = "windows")]
-pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<String>> {
-    match_fonts_for_character_no_fontconfig(chr, settings)
+    #[cfg(target_family = "windows")]
+    no_fontconfig::match_fonts_for_character(chr, settings)
 }
 
 #[cfg(target_family = "unix")]
-fn match_fonts_for_character_fontconfig(chr: char) -> Result<Vec<String>> {
+mod with_fontconfig {
     use std::ffi;
-    use std::ffi::CStr;
     use std::os::raw::c_char;
+    use std::path::PathBuf;
     use std::slice;
 
     use fontconfig::fontconfig as fc;
     use scopeguard::defer;
 
-    unsafe {
-        let char_set = fc::FcCharSetCreate();
-        defer! {
-            fc::FcCharSetDestroy(char_set);
-        }
-        fc::FcCharSetAddChar(char_set, chr as u32);
+    use super::{filter_fonts_with_preview_font_settings, Error, FontDescriptor, Result, Settings};
 
-        let pattern = fc::FcPatternCreate();
-        defer! {
-            fc::FcPatternDestroy(pattern);
-        }
-        fc::FcPatternAddCharSet(pattern, ffi::CString::new("charset")?.as_ptr(), char_set);
+    const FC_PROPERTY_FILE: &str = "file";
+    const FC_PROPERTY_FAMILY_NAME: &str = "family";
+    const FC_PROPERTY_FULL_NAME: &str = "fullname";
 
-        let object_set = fc::FcObjectSetCreate();
-        defer! {
-            fc::FcObjectSetDestroy(object_set);
-        }
-        fc::FcObjectSetAdd(object_set, ffi::CString::new("file")?.as_ptr());
+    pub fn match_fonts_for_character(
+        chr: char,
+        settings: &Settings,
+    ) -> Result<Vec<FontDescriptor>> {
+        let all_fonts = all_fonts_matched_by_fontconfig(chr)?;
+        let specified_preview_font_names = settings.get_preview_fonts_for(chr);
+        Ok(filter_fonts_with_preview_font_settings(
+            all_fonts,
+            &specified_preview_font_names,
+        ))
+    }
 
-        let font_set = fc::FcFontList(std::ptr::null_mut(), pattern, object_set);
-        defer! {
-            fc::FcFontSetDestroy(font_set);
-        }
+    fn all_fonts_matched_by_fontconfig(chr: char) -> Result<Vec<FontDescriptor>> {
+        unsafe {
+            let char_set = fc::FcCharSetCreate();
+            defer! {
+                fc::FcCharSetDestroy(char_set);
+            }
+            fc::FcCharSetAddChar(char_set, chr as u32);
 
-        if (*font_set).nfont <= 0 {
-            return Err(Box::new(Error::GlyphNotFound { chr }));
-        }
+            let pattern = fc::FcPatternCreate();
+            defer! {
+                fc::FcPatternDestroy(pattern);
+            }
+            fc::FcPatternAddCharSet(pattern, ffi::CString::new("charset")?.as_ptr(), char_set);
 
-        let mut font_paths = vec![];
-        {
-            font_paths.reserve((*font_set).nfont as usize);
+            let object_set = fc::FcObjectSetCreate();
+            defer! {
+                fc::FcObjectSetDestroy(object_set);
+            }
+            fc::FcObjectSetAdd(object_set, ffi::CString::new(FC_PROPERTY_FILE)?.as_ptr());
+            fc::FcObjectSetAdd(
+                object_set,
+                ffi::CString::new(FC_PROPERTY_FAMILY_NAME)?.as_ptr(),
+            );
+            fc::FcObjectSetAdd(
+                object_set,
+                ffi::CString::new(FC_PROPERTY_FULL_NAME)?.as_ptr(),
+            );
+
+            let font_set = fc::FcFontList(std::ptr::null_mut(), pattern, object_set);
+            defer! {
+                fc::FcFontSetDestroy(font_set);
+            }
+
+            if (*font_set).nfont <= 0 {
+                return Err(Box::new(Error::GlyphNotFound { chr }));
+            }
 
             let patterns_slice = slice::from_raw_parts::<*mut fc::FcPattern>(
                 (*font_set).fonts,
                 (*font_set).nfont as usize,
             );
+            let font_descriptors = patterns_slice
+                .into_iter()
+                .filter_map(|pattern| try_create_font_descriptor_from_fc_pattern(*pattern))
+                .collect();
 
-            for pattern in patterns_slice {
-                let mut value: *mut u8 = std::ptr::null_mut();
-                let result = fc::FcPatternGetString(
-                    *pattern,
-                    ffi::CString::new("file")?.as_ptr(),
-                    0,
-                    &mut value as *mut *mut u8,
-                );
+            Ok(font_descriptors)
+        }
+    }
 
-                if result != fc::FcResultMatch {
-                    return Err(Box::new(Error::GlyphNotFound { chr }));
-                }
+    fn fc_pattern_get_string_property(
+        pattern: *mut fc::FcPattern,
+        property_name: &str,
+    ) -> Option<String> {
+        let mut value: *mut u8 = std::ptr::null_mut();
 
-                let font_path = CStr::from_ptr(value as *mut c_char).to_str()?.to_owned();
-                font_paths.push(font_path);
+        let property_name = ffi::CString::new(property_name);
+        if property_name.is_err() {
+            return None;
+        }
+        let property_name = property_name.unwrap();
+
+        unsafe {
+            let result = fc::FcPatternGetString(
+                pattern,
+                property_name.as_ptr(),
+                0,
+                &mut value as *mut *mut u8,
+            );
+            if result != fc::FcResultMatch {
+                return None;
             }
 
-            font_paths.sort();
+            let property_value_str = ffi::CStr::from_ptr(value as *mut c_char).to_str();
+            if property_value_str.is_err() {
+                return None;
+            }
+            let property_value_str = property_value_str.unwrap();
+
+            Some(property_value_str.to_owned())
         }
-        Ok(font_paths)
+    }
+
+    fn try_create_font_descriptor_from_fc_pattern(
+        pattern: *mut fc::FcPattern,
+    ) -> Option<FontDescriptor> {
+        let path = fc_pattern_get_string_property(pattern, FC_PROPERTY_FILE);
+        if path.is_none() {
+            return None;
+        }
+        let path = path.unwrap();
+
+        let family_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FAMILY_NAME);
+        if family_name.is_none() {
+            return None;
+        }
+        let family_name = family_name.unwrap();
+
+        let full_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FULL_NAME);
+        if full_name.is_none() {
+            return None;
+        }
+        let full_name = full_name.unwrap();
+
+        Some(FontDescriptor {
+            path: PathBuf::from(path),
+            family_name,
+            full_name,
+            _private: (),
+        })
     }
 }
 
-fn match_fonts_for_character_no_fontconfig(chr: char, settings: &Settings) -> Result<Vec<String>> {
-    let font_search_paths = settings
-        .font_search_paths
-        .as_ref()
-        .ok_or(Error::MissingFontSearchPath)?;
-    let library = Library::init()?;
-    let all_fonts = all_fonts_in_search_path(font_search_paths, &library);
+mod no_fontconfig {
+    use std::path::PathBuf;
 
-    let specified_preview_font_names = settings.get_preview_fonts_for(chr);
-    if specified_preview_font_names.is_empty() {
-        Ok(all_fonts
-            .iter()
-            .map(|(font_path, _)| font_path.clone())
-            .collect())
-    } else {
+    use freetype::{Face, Library};
+    use walkdir::WalkDir;
+
+    use super::{filter_fonts_with_preview_font_settings, Error, FontDescriptor, Result, Settings};
+
+    pub fn match_fonts_for_character(
+        chr: char,
+        settings: &Settings,
+    ) -> Result<Vec<FontDescriptor>> {
+        let font_search_paths = settings
+            .font_search_paths
+            .as_ref()
+            .ok_or(Error::MissingFontSearchPath)?;
+        let library = Library::init()?;
+        let all_fonts = all_fonts_in_search_path(font_search_paths, &library);
+
+        let specified_preview_font_names = settings.get_preview_fonts_for(chr);
+
         Ok(filter_fonts_with_preview_font_settings(
-            &all_fonts,
+            all_fonts,
             &specified_preview_font_names,
         ))
     }
-}
 
-fn all_fonts_in_search_path(
-    font_search_paths: &[PathBuf],
-    library: &Library,
-) -> Vec<(String, Face)> {
-    let mut fonts = vec![];
+    fn all_fonts_in_search_path(
+        font_search_paths: &[PathBuf],
+        library: &Library,
+    ) -> Vec<FontDescriptor> {
+        let mut fonts = vec![];
 
-    for font_search_path in font_search_paths {
-        if !font_search_path.is_dir() {
-            // Ignore non-directory file paths
-            continue;
-        }
-
-        // Work the search path ignoring dir iterating errors
-        for entry in WalkDir::new(font_search_path)
-            .into_iter()
-            .filter_map(|entry_result| entry_result.ok())
-        {
-            let new_face_result = library.new_face(entry.path(), 0);
-            if new_face_result.is_err() {
-                // Ignore errors when parsing fonts
+        for font_search_path in font_search_paths {
+            if !font_search_path.is_dir() {
+                // Ignore non-directory file paths
                 continue;
             }
-            let font_face = new_face_result.unwrap();
 
-            let font_path = entry.path();
-            let font_path_str = font_path.to_str();
-            if font_path_str.is_none() {
-                // Ignore errors when converting file path to UTF-8 strings
-                continue;
+            // Work the search path ignoring dir iterating errors
+            for entry in WalkDir::new(font_search_path)
+                .into_iter()
+                .filter_map(|entry_result| entry_result.ok())
+            {
+                let new_face_result = library.new_face(entry.path(), 0);
+                if new_face_result.is_err() {
+                    // Ignore errors when parsing fonts
+                    continue;
+                }
+                let font_face = new_face_result.unwrap();
+
+                let font_descriptor =
+                    try_create_font_descriptor_from_face(entry.path().to_owned(), &font_face);
+                if font_descriptor.is_none() {
+                    // Ignore invalid font descriptors
+                    continue;
+                }
+                let font_descriptor = font_descriptor.unwrap();
+
+                fonts.push(font_descriptor);
             }
-            fonts.push((font_path_str.unwrap().to_owned(), font_face));
         }
+
+        fonts
     }
 
-    fonts
+    fn try_create_font_descriptor_from_face(path: PathBuf, face: &Face) -> Option<FontDescriptor> {
+        let family_name = face.family_name();
+        if family_name.is_none() {
+            return None;
+        }
+        let family_name = family_name.unwrap();
+
+        let postscript_name = face.postscript_name();
+        if postscript_name.is_none() {
+            return None;
+        }
+        let postscript_name = postscript_name.unwrap();
+
+        Some(FontDescriptor {
+            path,
+            family_name,
+            full_name: postscript_name, // Using PostScript name as full name
+            _private: (),
+        })
+    }
 }
 
 fn filter_fonts_with_preview_font_settings(
-    all_available_fonts: &[(String, Face)],
+    all_available_fonts: Vec<FontDescriptor>,
     specified_preview_font_names: &[String],
-) -> Vec<String> {
-    all_available_fonts
-        .iter()
-        .filter(|(_, font_face)| {
-            fn is_matching_name(name: Option<String>, acceptable_names: &[String]) -> bool {
-                match name {
-                    Some(name) => acceptable_names
+) -> Vec<FontDescriptor> {
+    if specified_preview_font_names.is_empty() {
+        all_available_fonts.iter().cloned().collect()
+    } else {
+        all_available_fonts
+            .iter()
+            .filter(|font_descriptor| {
+                fn is_matching_name(name: &str, acceptable_names: &[String]) -> bool {
+                    acceptable_names
                         .iter()
-                        .any(|acceptable_name| name.contains(acceptable_name)),
-                    None => false,
+                        .any(|acceptable_name| name.contains(acceptable_name))
                 }
-            }
 
-            let family_name = font_face.family_name();
-            if is_matching_name(family_name, specified_preview_font_names) {
-                return true;
-            }
+                if is_matching_name(&font_descriptor.family_name, specified_preview_font_names) {
+                    return true;
+                }
 
-            let postscript_name = font_face.postscript_name();
-            if is_matching_name(postscript_name, specified_preview_font_names) {
-                return true;
-            }
+                if is_matching_name(&font_descriptor.full_name, specified_preview_font_names) {
+                    return true;
+                }
 
-            // Neither family name nor postscript name matches
-            false
-        })
-        .map(|(font_path, _)| font_path.clone())
-        .collect()
+                // Neither family name nor full name matches
+                false
+            })
+            .cloned()
+            .collect()
+    }
 }
 
 // TODO: Unit tests
