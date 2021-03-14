@@ -8,7 +8,7 @@ Unicode tool with a terminal user interface.
 
 ```
 $ cicero -h
-Cicero: A Unicode Tool 0.1.1 (Unicode Version 13.0.0)
+Cicero: A Unicode Tool 0.2.0 (Unicode Version 13.0.0)
 
 USAGE:
     cicero [FLAGS] [OPTIONS] [INPUT]
@@ -31,7 +31,13 @@ ARGS:
     <INPUT>    a string or comma separated code points
 ```
 
-## Installation (homebrew tap)
+## Supported Platforms
+
+Cicero is tested on GNU/Linux, macOS, and Windows.
+
+## Installation
+
+### Homebrew Tap
 
 The easiest way to install Cicero is via homebrew tap.
 
@@ -46,7 +52,7 @@ $ brew tap eyeplum/tap
 $ brew install cicero-tui
 ```
 
-## Installation (AUR)
+### AUR
 
 `cicero` can be installed from available [AUR packages](https://aur.archlinux.org/packages/?O=0&SeB=b&K=cicero&outdated=&SB=n&SO=a&PP=50&do_Search=Go) using an [AUR helper](https://wiki.archlinux.org/index.php/AUR_helpers). For example,
 
@@ -62,23 +68,17 @@ $ cd cicero
 $ makepkg -si
 ```
 
-## Installation (building from source)
+### Building From Source
 
 You can also build Cicero from source.
 
-### Supported Platforms
-
-Cicero is tested on GNU/Linux, macOS, and Windows.
-
-**Note:** Character preview is not available on Windows at the moment (I haven't been able to find an alternative for `fontconfig` on Windows), though it should work on Windows Subsystem for Linux.
-
-### Rust
+#### Rust
 
 Make sure the latest stable Rust toolchain is installed. See [rustup](https://rustup.rs/).
 
-### fontconfig and freetype
+#### fontconfig and freetype (macOS and Linux only)
 
-Cicero requires `fontconfig` and `freetype` libraries to build.
+Cicero requires `fontconfig` and `freetype` libraries to build on Unix platforms.
 
 - On GNU/Linux (Tested on Ubuntu 18.04 LTS)
 
@@ -95,7 +95,7 @@ Cicero requires `fontconfig` and `freetype` libraries to build.
   $ brew install pkg-config fontconfig
   ```
 
-### Building
+#### Building
 
 Building cicero should be as easy as:
 
@@ -111,6 +111,116 @@ You could also copy the final product to somewhere in your `PATH`, for example:
 
 ```sh
 $ cp target/release/cicero $HOME/.local/bin/
+```
+
+## Configuration
+
+A `settings.toml` file can be created to configure character previews of Cicero.
+
+**Note: The configuration file is required on Windows in order to preview characters.**
+
+The file is read from the following locations:
+- On Unix platforms, the file is read from `$HOME/.config/cicero/settings.toml`
+- On Windows, the file is read from `C:\Users\<username>\.config\cicero\settings.toml`
+
+The configuration file has the following format:
+
+```toml
+# Whether to use fontconfig for font discovery.
+# True by default.
+# Ignored on Windows (as fontconfig is only available on Unix platforms).
+use_fontconfig = false 
+
+# Paths for recursively searching for fonts.
+# Required on Windows in order to preview characters.
+# Must be absolute paths.
+# Ignored if fontconfig is set to true.
+font_search_paths = ["<path>"]
+
+# Preview fonts configuration.
+# Optional. If omitted all discovered fonts are used in character preview.
+# Multiple entries can be defined, the final fonts used in character preview
+# are a union of all fonts matched by all entries.
+[[preview_fonts]]
+code_point_range = "<range>" # Code point range to apply this entry, supported formats:
+                             # - An inclusive range of Unicode Code Points, e.g. "U+0020..U+00FF"
+                             # - Unicode Block name, e.g. "Basic Latin"
+                             # - Unicode Plane name, e.g. "Basic Multilingual Plane"
+                             # This filed is optional, if omitted this entry will be applied
+                             # to all Unicode characters.
+font_name = "<font>" # Name of the font to be added to the preview list.
+                     # The name is partially matched to the font's family name and full name.
+```
+
+### `settings.toml` Examples
+
+#### Unix
+
+##### Use `fontconfig`
+
+This config file has the following behaviors:
+- Use `fontconfig` for font discovery
+- Use `Noto Sans` for displayable ASCII characters
+- Use all fonts with `CJK` in their name for characters in the `CJK Unified Ideographs` block
+- Use all discovered fonts for other characters
+
+```toml
+[[preview_fonts]]
+code_point_range = "U+0020..U+007E"
+font_name = "Noto Sans"
+
+[[preview_fonts]]
+code_point_range = "CJK Unified Ideographs"
+font_name = "CJK"
+```
+
+##### Don't use `fontconfig`
+
+This config file has the following behaviours:
+- Don't use `fontconfig` for font discovery 
+- Search fonts recursively in `~/Fonts/` and `~/Documents/Fonts/` directory
+- Use `Noto Sans` for displayable ASCII characters
+- Use all fonts with `CJK` in their name for characters in the `CJK Unified Ideographs` block
+- Use all discovered fonts for other characters
+
+```toml
+use_fontconfig = false
+
+font_search_paths = [
+  "/home/<username>/Fonts", 
+  "/home/<username>/Documents/Fonts"
+]
+
+[[preview_fonts]]
+code_point_range = "U+0020..U+007E"
+font_name = "Noto Sans"
+
+[[preview_fonts]]
+code_point_range = "CJK Unified Ideographs"
+font_name = "CJK"
+```
+
+
+#### Windows
+
+- Search fonts recursively in `C:\Windows\Fonts` and `C:\Users\<username>\Documents\Fonts` directory
+- Use `Noto Sans` for displayable ASCII characters
+- Use all fonts with `CJK` in their name for characters in the `CJK Unified Ideographs` block
+- Use all discovered fonts for other characters
+
+```toml
+font_search_paths = [
+  "C:\\Windows\\Fonts",
+  "C:\\Users\\<username>\\Documents\\Fonts",
+]
+
+[[preview_fonts]]
+code_point_range = "U+0020..U+007E"
+font_name = "Noto Sans"
+
+[[preview_fonts]]
+code_point_range = "CJK Unified Ideographs"
+font_name = "CJK"
 ```
 
 ## License
