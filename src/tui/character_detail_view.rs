@@ -18,6 +18,7 @@ use super::character_preview_canvas::CharacterPreviewCanvas;
 use super::character_property_view::CharacterPropertyView;
 use super::main_view::TerminalFrame;
 use crate::settings::Settings;
+use std::path::PathBuf;
 
 pub struct CharacterDetailView {
     character_preview_canvas: Option<CharacterPreviewCanvas>,
@@ -27,7 +28,7 @@ pub struct CharacterDetailView {
 impl CharacterDetailView {
     pub fn new(
         chr: char,
-        selected_preview_font_path: Option<&String>,
+        selected_preview_font_path: &Option<PathBuf>,
         settings: &Settings,
     ) -> Self {
         CharacterDetailView {
@@ -58,7 +59,7 @@ impl CharacterDetailView {
         }
     }
 
-    pub fn get_current_preview_font_path(&self) -> Option<String> {
+    pub fn get_current_preview_font_path(&self) -> Option<PathBuf> {
         match &self.character_preview_canvas {
             Some(character_preview_canvas) => character_preview_canvas.get_current_preview_font(),
             None => None,

@@ -26,12 +26,14 @@ mod stateful_graphemes;
 pub use main_view::MainView;
 pub use renderer::run;
 
+use std::path::PathBuf;
+
 use crate::settings::{get_settings, Settings};
 
 #[derive(Debug)]
 pub struct ApplicationState {
     pub keep_running: bool,
-    pub selected_font_path: Option<String>,
+    pub selected_font_path: Option<PathBuf>,
     pub settings: Settings,
 }
 

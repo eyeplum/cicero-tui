@@ -13,6 +13,7 @@
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
 use std::cmp::min;
+use std::path::PathBuf;
 
 use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
@@ -35,7 +36,7 @@ pub struct CharacterPreviewCanvas {
 impl CharacterPreviewCanvas {
     pub fn try_new(
         chr: char,
-        selected_font_path: Option<&String>,
+        selected_font_path: &Option<PathBuf>,
         settings: &Settings,
     ) -> Result<Self> {
         let character_preview = CharacterPreview::new(chr, selected_font_path, settings)?;
@@ -61,7 +62,7 @@ impl CharacterPreviewCanvas {
         self.draw_borders(frame, rect);
     }
 
-    pub fn get_current_preview_font(&self) -> Option<String> {
+    pub fn get_current_preview_font(&self) -> Option<PathBuf> {
         self.character_preview.get_current_font_path()
     }
 

@@ -12,6 +12,8 @@
 // You should have received a copy of the GNU General Public License along with
 // Cicero. If not, see <https://www.gnu.org/licenses/>.
 
+use std::path::PathBuf;
+
 use freetype::{Face, Library};
 
 use super::font_match::fonts_for;
@@ -40,22 +42,29 @@ pub struct RenderedCharacter {
 pub struct CharacterPreview {
     pub chr: char,
 
-    paths_for_matching_fonts: StatefulVec<String>,
+    paths_for_matching_fonts: StatefulVec<PathBuf>,
 
-    library: Library, // TODO: Make this a long-living object to avoid re-init it for each character
+    library: Library, // TODO: Make this a long-living object to avoid recreating it for each character
     current_font: Face,
 }
 
 impl CharacterPreview {
     pub fn new(
         chr: char,
-        selected_font_path: Option<&String>,
+        selected_font_path: &Option<PathBuf>,
         settings: &Settings,
     ) -> Result<CharacterPreview> {
-        let font_paths = fonts_for(chr, settings)?;
-        if font_paths.is_empty() {
-            return Err(Box::new(Error::GlyphNotFound { chr }));
-        }
+        let font_paths = {
+            let mut font_paths: Vec<PathBuf> = fonts_for(chr, settings)?
+                .iter()
+                .map(|font| font.path.clone())
+                .collect();
+            if font_paths.is_empty() {
+                return Err(Box::new(Error::GlyphNotFound { chr }));
+            }
+            font_paths.sort();
+            font_paths
+        };
 
         let mut paths_for_matching_fonts = StatefulVec::new(font_paths, Some(0));
         if let Some(font_path) = selected_font_path {
@@ -74,7 +83,7 @@ impl CharacterPreview {
         })
     }
 
-    pub fn get_current_font_path(&self) -> Option<String> {
+    pub fn get_current_font_path(&self) -> Option<PathBuf> {
         match self.paths_for_matching_fonts.current_item() {
             Some(current_font_path) => Some(current_font_path.to_owned()),
             None => None,
