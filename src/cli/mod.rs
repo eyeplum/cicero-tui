@@ -32,6 +32,7 @@ pub use output::{
 };
 
 pub const FLAG_NAME_TUI_MODE: &str = "tui_mode";
+pub const FLAG_NAME_GENERATE_FLAMEGRAPH: &str = "generate_flamegraph";
 pub const FLAG_NAME_CODE_POINT_INPUT_MODE: &str = "code_point_input_mode";
 
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -76,6 +77,15 @@ macro_rules! create_cli {
                     .short("t")
                     .long("tui")
                     .help("Shows Terminal UI"),
+            )
+            .arg(
+                Arg::with_name(cli::FLAG_NAME_GENERATE_FLAMEGRAPH)
+                    .short("g")
+                    .long("generate-flamegraph")
+                    .help(
+                        "Generate Flamegraph for all Unicode Planes,\n\
+                    which can be loaded by Chrome's tracer UI (about:tracing)",
+                    ),
             )
             .arg(
                 Arg::with_name(cli::FLAG_NAME_CODE_POINT_INPUT_MODE)
