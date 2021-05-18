@@ -8,18 +8,20 @@ Unicode tool with a terminal user interface.
 
 ```
 $ cicero -h
-Cicero: A Unicode Tool 0.2.0 (Unicode Version 13.0.0)
+Cicero: A Unicode Tool 0.2.1 (Unicode Version 13.0.0)
 
 USAGE:
-    cicero [FLAGS] [OPTIONS] [INPUT]
+    cicero.exe [FLAGS] [OPTIONS] [INPUT]
 
 FLAGS:
-    -u               Parses INPUT as comma separated code points,
-                     same as '--input-type=code-points',
-                     ignored if '--input-type' is specified
-    -h, --help       Prints help information
-    -t, --tui        Shows Terminal UI
-    -V, --version    Prints version information
+    -u                           Parses INPUT as comma separated code points,
+                                 same as '--input-type=code-points',
+                                 ignored if '--input-type' is specified
+    -g, --generate-flamegraph    Generate Flamegraph for all Unicode Planes,
+                                 which can be loaded by Chrome's tracer UI (about:tracing)
+    -h, --help                   Prints help information
+    -t, --tui                    Shows Terminal UI
+    -V, --version                Prints version information
 
 OPTIONS:
     -i, --input-type <TYPE>         Specifies input type, 'string' by default,
