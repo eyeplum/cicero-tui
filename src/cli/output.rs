@@ -15,6 +15,7 @@
 use clap::ArgMatches;
 
 use super::{parse_input, Error, Result};
+use crate::cli::input::Input;
 use crate::ucd::GraphemeProperties;
 
 pub const OPTION_NAME_OUTPUT_FORMAT: &str = "output_format";
@@ -31,6 +32,11 @@ fn graphems_to_string(graphemes: &[GraphemeProperties]) -> String {
 
 pub fn generate_output(args: ArgMatches) -> Result<String> {
     let input = parse_input(&args)?;
+
+    if let Input::GenerateFlamegraph = input {
+        return chrome_tracing::describe_unicode_as_events();
+    }
+
     let graphemes = GraphemeProperties::from_string(&input.to_string());
     match args.value_of(OPTION_NAME_OUTPUT_FORMAT) {
         Some(output_format) => match output_format {
@@ -41,5 +47,71 @@ pub fn generate_output(args: ArgMatches) -> Result<String> {
             ))),
         },
         None => Ok(graphems_to_string(&graphemes)),
+    }
+}
+
+// TODO: Should this module be a separate file?
+mod chrome_tracing {
+    use serde::Serialize;
+    use unic::ucd::{Block, BlockIter};
+
+    use super::Result;
+    use crate::ucd::{Plane, PLANE_COUNT};
+
+    #[derive(Serialize)]
+    struct Event {
+        name: &'static str,
+        cat: &'static str,
+        ph: char,
+        ts: u32,
+        pid: u64,
+        tid: u64,
+    }
+
+    pub fn describe_unicode_as_events() -> Result<String> {
+        let blocks: Vec<Block> = BlockIter::new().collect();
+
+        let mut events = Vec::with_capacity(blocks.len() + PLANE_COUNT as usize);
+
+        for i in 0..PLANE_COUNT {
+            let plane = Plane::at(i as usize);
+            events.push(Event {
+                name: plane.name,
+                cat: "Plane",
+                ph: 'B',
+                ts: plane.range.start,
+                pid: 0,
+                tid: 0,
+            });
+            events.push(Event {
+                name: plane.name,
+                cat: "Plane",
+                ph: 'E',
+                ts: plane.range.end,
+                pid: 0,
+                tid: 0,
+            });
+        }
+
+        for block in blocks {
+            events.push(Event {
+                name: block.name,
+                cat: "Block",
+                ph: 'B',
+                ts: block.range.low as u32,
+                pid: 0,
+                tid: 0,
+            });
+            events.push(Event {
+                name: block.name,
+                cat: "Block",
+                ph: 'E',
+                ts: block.range.high as u32,
+                pid: 0,
+                tid: 0,
+            });
+        }
+
+        Ok(serde_json::to_string_pretty(&events)?)
     }
 }

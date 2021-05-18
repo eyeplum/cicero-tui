@@ -16,7 +16,7 @@ use std::char;
 
 use clap::ArgMatches;
 
-use super::{Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE};
+use super::{Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE, FLAG_NAME_GENERATE_FLAMEGRAPH};
 use crate::ucd::string_to_code_point;
 
 pub const OPTION_NAME_INPUT_TYPE: &str = "input_type";
@@ -38,6 +38,7 @@ fn characters_from_input_string(input_string: &str) -> Vec<char> {
 pub enum Input {
     String(String),
     Characters(Vec<char>),
+    GenerateFlamegraph,
 }
 
 impl ToString for Input {
@@ -52,11 +53,16 @@ impl ToString for Input {
                 }
                 string
             }
+            Input::GenerateFlamegraph => String::new(), // This variant is not representable as a string
         }
     }
 }
 
 pub fn parse_input(args: &ArgMatches) -> Result<Input> {
+    if args.is_present(FLAG_NAME_GENERATE_FLAMEGRAPH) {
+        return Ok(Input::GenerateFlamegraph);
+    }
+
     let input_string = args.value_of(ARGUMENT_VALUE_NAME_INPUT).unwrap_or(""); // No input is provided, fallback to an empty string
 
     match args.value_of(OPTION_NAME_INPUT_TYPE) {

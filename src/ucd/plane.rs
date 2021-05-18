@@ -14,7 +14,8 @@
 
 use super::Range;
 
-const PLANE_COUNT: u32 = 17;
+pub const PLANE_COUNT: u32 = 17;
+
 const PLANE_SIZE: u32 = 0x1_0000;
 const PLANE_NAMES: &[&str] = &[
     "Basic Multilingual Plane",
@@ -51,13 +52,17 @@ impl Plane {
         assert_eq!(PLANE_NAMES.len(), PLANE_COUNT as usize);
 
         let plane_index = chr as u32 / PLANE_SIZE;
-        assert!(plane_index < PLANE_COUNT);
+        Self::at(plane_index as usize)
+    }
+
+    pub fn at(index: usize) -> Plane {
+        assert!(index < PLANE_COUNT as usize);
 
         Plane {
-            name: PLANE_NAMES[plane_index as usize],
+            name: PLANE_NAMES[index],
             range: Range {
-                start: plane_index * PLANE_SIZE,
-                end: (plane_index + 1) * PLANE_SIZE - 1,
+                start: index as u32 * PLANE_SIZE,
+                end: (index as u32 + 1) * PLANE_SIZE - 1,
             },
         }
     }

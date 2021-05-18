@@ -25,12 +25,12 @@ mod character_properties;
 mod plane;
 
 pub use character_properties::{CharacterProperties, GraphemeProperties};
-pub use plane::Plane;
+pub use plane::{Plane, PLANE_COUNT};
 
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Range {
-    start: u32,
-    end: u32,
+    pub start: u32,
+    pub end: u32,
 }
 
 pub fn code_point_to_string(chr: char) -> String {
