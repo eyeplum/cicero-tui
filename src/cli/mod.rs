@@ -38,6 +38,7 @@ pub const FLAG_NAME_CODE_POINT_INPUT_MODE: &str = "code_point_input_mode";
 pub type Result<T> = std::result::Result<T, Box<dyn error::Error>>;
 
 pub enum Error {
+    MissingInput,
     UnrecognizedInputType(String),
     UnrecognizedOutputFormat(String),
 }
@@ -51,6 +52,7 @@ impl fmt::Debug for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Error::MissingInput => write!(f, "An input or `--tui` flag is expected"),
             Error::UnrecognizedInputType(input_type) => {
                 write!(f, "Unrecognized input type '{}'", input_type)
             }

@@ -16,7 +16,10 @@ use std::char;
 
 use clap::ArgMatches;
 
-use super::{Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE, FLAG_NAME_GENERATE_FLAMEGRAPH};
+use super::{
+    Error, Result, FLAG_NAME_CODE_POINT_INPUT_MODE, FLAG_NAME_GENERATE_FLAMEGRAPH,
+    FLAG_NAME_TUI_MODE,
+};
 use crate::ucd::string_to_code_point;
 
 pub const OPTION_NAME_INPUT_TYPE: &str = "input_type";
@@ -63,7 +66,16 @@ pub fn parse_input(args: &ArgMatches) -> Result<Input> {
         return Ok(Input::GenerateFlamegraph);
     }
 
-    let input_string = args.value_of(ARGUMENT_VALUE_NAME_INPUT).unwrap_or(""); // No input is provided, fallback to an empty string
+    let input_string = &match args.value_of(ARGUMENT_VALUE_NAME_INPUT) {
+        Some(v) => v.to_string(),
+        None => {
+            if args.is_present(FLAG_NAME_TUI_MODE) {
+                String::new() // Fallback to an empty string
+            } else {
+                return Err(Box::new(Error::MissingInput));
+            }
+        }
+    };
 
     match args.value_of(OPTION_NAME_INPUT_TYPE) {
         Some(input_type) => match input_type {
