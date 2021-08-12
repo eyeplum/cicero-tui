@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 clap = "2.33"
-crossterm = "0.17"
+crossterm = "0.20"
 dirs = "3.0.1"
 freetype-rs = "0.26"
 hex-slice = "0.1"

@@ -14,8 +14,10 @@
 
 use std::io::{stdout, Stdout};
 
-use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use crossterm::Result;
+use crossterm::terminal::{
+    disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
+};
+use crossterm::{execute, Result};
 use tui::{backend::CrosstermBackend, Terminal};
 
 pub type ApplicationTerminal = Terminal<CrosstermBackend<Stdout>>;
@@ -26,10 +28,9 @@ where
 {
     enable_raw_mode()?;
 
-    let stdout = stdout();
+    execute!(stdout(), EnterAlternateScreen)?;
 
-    let backend = CrosstermBackend::new(stdout);
-
+    let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
     terminal.clear()?;
@@ -39,6 +40,7 @@ where
         keep_running = f(&mut terminal)?;
     }
 
-    terminal.clear()?;
+    execute!(stdout(), LeaveAlternateScreen)?;
+
     disable_raw_mode()
 }
