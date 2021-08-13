@@ -84,10 +84,9 @@ impl CharacterPreview {
     }
 
     pub fn get_current_font_path(&self) -> Option<PathBuf> {
-        match self.paths_for_matching_fonts.current_item() {
-            Some(current_font_path) => Some(current_font_path.to_owned()),
-            None => None,
-        }
+        self.paths_for_matching_fonts
+            .current_item()
+            .map(|current_font_path| current_font_path.to_owned())
     }
 
     pub fn has_previous_font(&self) -> bool {

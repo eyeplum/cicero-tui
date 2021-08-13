@@ -156,25 +156,25 @@ impl MainView {
             KeyCode::Up => {
                 self.graphemes.select_previous();
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                    self.update_showing_detail(app_state);
                 }
             }
             KeyCode::PageUp => {
                 self.graphemes.select_previous_n(PAGE_CONTROL_STEP_SIZE);
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                    self.update_showing_detail(app_state);
                 }
             }
             KeyCode::Down => {
                 self.graphemes.select_next();
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                    self.update_showing_detail(app_state);
                 }
             }
             KeyCode::PageDown => {
                 self.graphemes.select_next_n(PAGE_CONTROL_STEP_SIZE);
                 if self.character_detail_view.is_some() {
-                    self.update_showing_detail(&app_state);
+                    self.update_showing_detail(app_state);
                 }
             }
             KeyCode::Left => {
@@ -191,7 +191,7 @@ impl MainView {
                         character_detail_view.get_current_preview_font_path()
                 }
             }
-            KeyCode::Enter => self.update_showing_detail(&app_state),
+            KeyCode::Enter => self.update_showing_detail(app_state),
             KeyCode::Char(c) => self.handle_character_input(c, event.modifiers),
             KeyCode::Backspace => {
                 self.user_input.pop();
