@@ -66,16 +66,16 @@ pub fn parse_input(args: &ArgMatches) -> Result<Input> {
         return Ok(Input::GenerateFlamegraph);
     }
 
-    let input_string = &match args.value_of(ARGUMENT_VALUE_NAME_INPUT) {
-        Some(v) => v.to_string(),
+    let input_string = match args.value_of(ARGUMENT_VALUE_NAME_INPUT) {
+        Some(v) => Ok(v),
         None => {
             if args.is_present(FLAG_NAME_TUI_MODE) {
-                String::new() // Fallback to an empty string
+                Ok("") // Fallback to an empty string
             } else {
-                return Err(Box::new(Error::MissingInput));
+                Err(Box::new(Error::MissingInput))
             }
         }
-    };
+    }?;
 
     match args.value_of(OPTION_NAME_INPUT_TYPE) {
         Some(input_type) => match input_type {
