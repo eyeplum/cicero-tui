@@ -22,3 +22,5 @@ jobs:
       run: cargo build --locked --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
