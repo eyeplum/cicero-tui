@@ -17,6 +17,7 @@ use std::path::PathBuf;
 use super::{Error, Result};
 use crate::settings::Settings;
 
+#[allow(clippy::manual_non_exhaustive)]
 #[derive(Clone)]
 pub struct FontDescriptor {
     pub path: PathBuf,
@@ -107,7 +108,7 @@ mod with_fontconfig {
                 (*font_set).nfont as usize,
             );
             let font_descriptors = patterns_slice
-                .into_iter()
+                .iter()
                 .filter_map(|pattern| try_create_font_descriptor_from_fc_pattern(*pattern))
                 .collect();
 
@@ -152,21 +153,15 @@ mod with_fontconfig {
         pattern: *mut fc::FcPattern,
     ) -> Option<FontDescriptor> {
         let path = fc_pattern_get_string_property(pattern, FC_PROPERTY_FILE);
-        if path.is_none() {
-            return None;
-        }
+        path.as_ref()?;
         let path = path.unwrap();
 
         let family_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FAMILY_NAME);
-        if family_name.is_none() {
-            return None;
-        }
+        family_name.as_ref()?;
         let family_name = family_name.unwrap();
 
         let full_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FULL_NAME);
-        if full_name.is_none() {
-            return None;
-        }
+        full_name.as_ref()?;
         let full_name = full_name.unwrap();
 
         Some(FontDescriptor {
@@ -246,15 +241,11 @@ mod no_fontconfig {
 
     fn try_create_font_descriptor_from_face(path: PathBuf, face: &Face) -> Option<FontDescriptor> {
         let family_name = face.family_name();
-        if family_name.is_none() {
-            return None;
-        }
+        family_name.as_ref()?;
         let family_name = family_name.unwrap();
 
         let postscript_name = face.postscript_name();
-        if postscript_name.is_none() {
-            return None;
-        }
+        postscript_name.as_ref()?;
         let postscript_name = postscript_name.unwrap();
 
         Some(FontDescriptor {
@@ -271,7 +262,7 @@ fn filter_fonts_with_preview_font_settings(
     specified_preview_font_names: &[String],
 ) -> Vec<FontDescriptor> {
     if specified_preview_font_names.is_empty() {
-        all_available_fonts.iter().cloned().collect()
+        all_available_fonts.to_vec()
     } else {
         all_available_fonts
             .iter()

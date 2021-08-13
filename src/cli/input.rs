@@ -32,8 +32,7 @@ fn characters_from_input_string(input_string: &str) -> Vec<char> {
     input_string
         .split(',')
         .map(string_to_code_point)
-        .filter(Option::is_some)
-        .map(Option::unwrap)
+        .flatten()
         .collect()
 }
 

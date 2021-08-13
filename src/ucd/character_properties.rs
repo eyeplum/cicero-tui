@@ -118,10 +118,7 @@ impl CharacterProperties {
                 Some(name) => name.to_string(),
                 None => "".to_owned(),
             },
-            age: match Age::of(character) {
-                Some(age) => Some(age.actual().to_string()),
-                None => None,
-            },
+            age: Age::of(character).map(|age| age.actual().to_string()),
             general_category: StringValuedProperty::new(GeneralCategory::of(character)),
             plane_name: Plane::of(character).name,
             block_name: match Block::of(character) {
