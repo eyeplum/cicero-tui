@@ -151,18 +151,9 @@ mod with_fontconfig {
     fn try_create_font_descriptor_from_fc_pattern(
         pattern: *mut fc::FcPattern,
     ) -> Option<FontDescriptor> {
-        let path = fc_pattern_get_string_property(pattern, FC_PROPERTY_FILE);
-        path.as_ref()?;
-        let path = path.unwrap();
-
-        let family_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FAMILY_NAME);
-        family_name.as_ref()?;
-        let family_name = family_name.unwrap();
-
-        let full_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FULL_NAME);
-        full_name.as_ref()?;
-        let full_name = full_name.unwrap();
-
+        let path = fc_pattern_get_string_property(pattern, FC_PROPERTY_FILE)?;
+        let family_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FAMILY_NAME)?;
+        let full_name = fc_pattern_get_string_property(pattern, FC_PROPERTY_FULL_NAME)?;
         Some(FontDescriptor {
             path: PathBuf::from(path),
             family_name,
