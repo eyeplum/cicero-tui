@@ -17,13 +17,12 @@ use std::path::PathBuf;
 use super::{Error, Result};
 use crate::settings::Settings;
 
-#[allow(clippy::manual_non_exhaustive)]
+#[non_exhaustive]
 #[derive(Clone)]
 pub struct FontDescriptor {
     pub path: PathBuf,
     pub family_name: String,
     pub full_name: String,
-    _private: (), // Prevent construction of this struct
 }
 
 pub fn fonts_for(chr: char, settings: &Settings) -> Result<Vec<FontDescriptor>> {
@@ -168,7 +167,6 @@ mod with_fontconfig {
             path: PathBuf::from(path),
             family_name,
             full_name,
-            _private: (),
         })
     }
 }
@@ -252,7 +250,6 @@ mod no_fontconfig {
             path,
             family_name,
             full_name: postscript_name, // Using PostScript name as full name
-            _private: (),
         })
     }
 }
