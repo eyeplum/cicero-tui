@@ -229,14 +229,8 @@ mod no_fontconfig {
     }
 
     fn try_create_font_descriptor_from_face(path: PathBuf, face: &Face) -> Option<FontDescriptor> {
-        let family_name = face.family_name();
-        family_name.as_ref()?;
-        let family_name = family_name.unwrap();
-
-        let postscript_name = face.postscript_name();
-        postscript_name.as_ref()?;
-        let postscript_name = postscript_name.unwrap();
-
+        let family_name = face.family_name()?;
+        let postscript_name = face.postscript_name()?;
         Some(FontDescriptor {
             path,
             family_name,
