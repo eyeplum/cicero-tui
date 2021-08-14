@@ -259,7 +259,7 @@ fn filter_fonts_with_preview_font_settings(
     specified_preview_font_names: &[String],
 ) -> Vec<FontDescriptor> {
     if specified_preview_font_names.is_empty() {
-        all_available_fonts.to_vec()
+        all_available_fonts
     } else {
         all_available_fonts
             .iter()
