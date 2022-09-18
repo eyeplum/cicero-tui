@@ -31,8 +31,7 @@ pub const ARGUMENT_VALUE_NAME_INPUT: &str = "INPUT";
 fn characters_from_input_string(input_string: &str) -> Vec<char> {
     input_string
         .split(',')
-        .map(string_to_code_point)
-        .flatten()
+        .filter_map(string_to_code_point)
         .collect()
 }
 

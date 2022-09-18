@@ -189,7 +189,7 @@ impl CharacterProperties {
         };
 
         match long_description {
-            Some(long_description) => format!("{} ({})", long_description, self.ccc.to_string()),
+            Some(long_description) => format!("{} ({})", long_description, self.ccc),
             None => self.ccc.to_string(),
         }
     }
